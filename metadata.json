@@ -1,0 +1,7 @@
+{
+  "name": "Hindi OCR & Application Writer",
+  "description": "Extract text from Hindi images, correct grammar, and format into professional government applications.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
