@@ -10,7 +10,9 @@ import {
   Image as ImageIcon,
   AlertCircle,
   Loader2,
-  ChevronRight
+  ChevronRight,
+  MessageSquare,
+  QrCode
 } from "lucide-react";
 import Markdown from "react-markdown";
 import { processHindiImage, OCRResult } from "./services/geminiService";
@@ -110,78 +112,119 @@ export default function App() {
           />
         </div>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full bg-white/5 backdrop-blur-2xl rounded-[40px] shadow-2xl border border-white/10 p-12 space-y-10 relative z-10"
-        >
-          <div className="text-center space-y-4">
-            <motion.div 
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", damping: 12 }}
-              className="w-20 h-20 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-blue-500/20"
-            >
-              <FileText className="text-white w-10 h-10" />
-            </motion.div>
-            <h1 className="text-3xl font-black tracking-tight text-white">Hindi OCR <span className="text-blue-400">Pro</span></h1>
-            <p className="text-gray-400 text-sm font-medium">प्रीमियम डिजिटल आवेदन सेवा</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-8">
-            <div className="space-y-5">
-              <div className="space-y-2">
-                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Username</label>
-                <div className="relative group">
-                  <input 
-                    type="text" 
-                    value={loginUser}
-                    onChange={(e) => setLoginUser(e.target.value)}
-                    className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none group-hover:bg-white/10"
-                    placeholder="Admin"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Password</label>
-                <div className="relative group">
-                  <input 
-                    type="password" 
-                    value={loginPass}
-                    onChange={(e) => setLoginPass(e.target.value)}
-                    className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none group-hover:bg-white/10"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-              </div>
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-12 max-w-5xl w-full">
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="max-w-md w-full bg-white/5 backdrop-blur-2xl rounded-[40px] shadow-2xl border border-white/10 p-12 space-y-10"
+          >
+            <div className="text-center space-y-4">
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", damping: 12 }}
+                className="w-20 h-20 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-blue-500/20"
+              >
+                <FileText className="text-white w-10 h-10" />
+              </motion.div>
+              <h1 className="text-3xl font-black tracking-tight text-white">Hindi OCR <span className="text-blue-400">Pro</span></h1>
+              <p className="text-gray-400 text-sm font-medium">प्रीमियम डिजिटल आवेदन सेवा</p>
             </div>
 
-            {loginError && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="text-red-400 text-xs font-bold text-center bg-red-500/10 py-3 rounded-xl border border-red-500/20"
+            <form onSubmit={handleLogin} className="space-y-8">
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Username</label>
+                  <div className="relative group">
+                    <input 
+                      type="text" 
+                      value={loginUser}
+                      onChange={(e) => setLoginUser(e.target.value)}
+                      className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none group-hover:bg-white/10"
+                      placeholder="Admin"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Password</label>
+                  <div className="relative group">
+                    <input 
+                      type="password" 
+                      value={loginPass}
+                      onChange={(e) => setLoginPass(e.target.value)}
+                      className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none group-hover:bg-white/10"
+                      placeholder="••••••••"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {loginError && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-red-400 text-xs font-bold text-center bg-red-500/10 py-3 rounded-xl border border-red-500/20"
+                >
+                  गलत यूजरनेम या पासवर्ड!
+                </motion.div>
+              )}
+
+              <motion.button 
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                className="w-full py-5 bg-white text-black rounded-2xl font-black text-lg hover:bg-gray-100 transition-all shadow-xl shadow-white/5"
               >
-                गलत यूजरनेम या पासवर्ड!
-              </motion.div>
-            )}
+                Access Dashboard
+              </motion.button>
+            </form>
 
-            <motion.button 
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              className="w-full py-5 bg-white text-black rounded-2xl font-black text-lg hover:bg-gray-100 transition-all shadow-xl shadow-white/5"
+            <div className="pt-4 text-center">
+              <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">Secure Enterprise Access Only</p>
+            </div>
+          </motion.div>
+
+          {/* WhatsApp QR Code Beside Login */}
+          <motion.div 
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex-1 bg-gradient-to-br from-green-500/20 to-green-600/20 backdrop-blur-2xl rounded-[40px] p-10 border border-green-500/20 flex flex-col items-center text-center space-y-6"
+          >
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-green-500/10 rounded-full border border-green-500/20">
+              <MessageSquare className="w-4 h-4 text-green-400" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-green-400">Direct Support</span>
+            </div>
+            <h3 className="text-2xl font-black tracking-tight text-white">
+              हमसे व्हाट्सएप पर जुड़ें
+            </h3>
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-green-500/20 rounded-[40px] blur-2xl group-hover:blur-3xl transition-all duration-500" />
+              <div className="relative bg-white p-4 rounded-[30px] shadow-2xl">
+                <img 
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://wa.me/917250690120" 
+                  alt="WhatsApp QR Code"
+                  className="w-32 h-32 object-contain rounded-xl"
+                />
+              </div>
+            </div>
+            <p className="text-gray-400 text-xs font-medium max-w-[200px]">
+              स्कैन करें और किसी भी सहायता के लिए चैट शुरू करें
+            </p>
+            <motion.a 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              href="https://wa.me/917250690120" 
+              target="_blank"
+              className="flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-xl shadow-green-900/40 transition-all"
             >
-              Access Dashboard
-            </motion.button>
-          </form>
-
-          <div className="pt-4 text-center">
-            <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">Secure Enterprise Access Only</p>
-          </div>
-        </motion.div>
+              <MessageSquare className="w-4 h-4" />
+              Chat on WhatsApp
+            </motion.a>
+          </motion.div>
+        </div>
       </div>
     );
   }
@@ -360,6 +403,7 @@ export default function App() {
               <motion.div 
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
                 className="max-w-4xl mx-auto text-center space-y-8"
               >
                 <motion.div 
@@ -659,6 +703,22 @@ export default function App() {
             </div>
           </div>
         </footer>
+
+        {/* Floating WhatsApp Button */}
+        <motion.a
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          whileHover={{ scale: 1.1, y: -5 }}
+          whileTap={{ scale: 0.9 }}
+          href="https://wa.me/917250690120" 
+          target="_blank"
+          className="fixed bottom-8 right-8 z-50 w-16 h-16 bg-green-500 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-green-600 transition-colors group"
+        >
+          <MessageSquare className="w-8 h-8" />
+          <div className="absolute right-full mr-4 bg-white text-gray-900 px-4 py-2 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap font-bold text-sm border border-gray-100">
+            हमसे व्हाट्सएप पर बात करें
+          </div>
+        </motion.a>
       </div>
     </ErrorBoundary>
   );
