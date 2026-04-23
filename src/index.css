@@ -1,7 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@300;400;500;600;700&family=Noto+Serif+Devanagari:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
+@import "react-image-crop/dist/ReactCrop.css";
 
 @theme {
   --font-sans: "Inter", "Noto Sans Devanagari", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Noto Serif Devanagari", "Georgia", serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
 }

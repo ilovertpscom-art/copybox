@@ -1,0 +1,25 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role management",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "username": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "password": { "type": "string", "description": "Stored password (for admin reference)" },
+        "credits": { "type": "number", "description": "Remaining OCR credits" },
+        "status": { "type": "string", "enum": ["active", "locked"], "default": "active" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "username", "password", "role", "credits", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Collection of application users"
+    }
+  }
+}

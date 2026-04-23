@@ -3,7 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
+    <title>Hindi OCR Pro - Instant Hindi Text Extraction</title>
+    <meta name="description" content="Professional Hindi OCR tool for instant text extraction from images. Fast, accurate, and secure Hindi digital services." />
+    <meta name="keywords" content="Hindi OCR, text extraction, Devanagari OCR, Hindi paper to text, digital Hindi services" />
+    <script>
+      // Defensive script to catch attempts to override read-only window.fetch
+      (function() {
+        try {
+          var originalFetch = window.fetch;
+          if (originalFetch) {
+            Object.defineProperty(window, 'fetch', {
+              get: function() { return originalFetch; },
+              set: function(v) { console.warn('Override of window.fetch blocked to prevent crash.'); },
+              configurable: true
+            });
+          }
+        } catch (e) {
+          console.error('Failed to set fetch defender:', e);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

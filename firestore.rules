@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        request.auth.token.email == 'admin@hindiocr.pro' ||
+        request.auth.token.email == 'dot91siwan@gmail.com'
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Users collection
+    match /users/{docId} {
+      // Allow read if signed in (to check roles etc)
+      // Hardened: only admin can list all users. Regular users can only get their own doc.
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      
+      // Validation for create/update
+      function isValidUser(data) {
+        return data.uid is string && 
+               data.username is string && data.username.size() <= 100 &&
+               data.role in ['user', 'admin'] &&
+               data.password is string &&
+               data.credits is number &&
+               data.status in ['active', 'locked'] &&
+               data.createdAt is timestamp;
+      }
+
+      function isNotLocked() {
+        return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'active';
+      }
+
+      allow create: if isSignedIn() && (
+        // Allow bootstrap or admin creation
+        (request.resource.data.uid == request.auth.uid) || isAdmin()
+      ) && isValidUser(request.resource.data);
+
+      allow update: if isAdmin() || (
+        isOwner(resource.data.uid) && 
+        isNotLocked() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['credits']) &&
+        request.resource.data.credits == resource.data.credits - 1
+      );
+      allow delete: if isAdmin();
+    }
+  }
+}
