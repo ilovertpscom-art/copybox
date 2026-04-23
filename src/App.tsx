@@ -1517,14 +1517,31 @@ useEffect(() => {
                         />
                       </ReactCrop>
                     ) : (
-                      <div className="relative w-full h-full flex items-center justify-center">
+                      <div className="relative w-full h-full flex items-center justify-center group overflow-hidden">
                         <img 
                           src={croppedImageUrl || image} 
                           alt="Uploaded preview" 
-                          className="max-w-full max-h-full object-contain rounded-3xl shadow-2xl"
+                          className="max-w-full max-h-full object-contain rounded-3xl shadow-2xl transition-all"
                           referrerPolicy="no-referrer"
                         />
-                        {croppedImageUrl && (
+                        
+                        {/* Scanning Animation */}
+                        {isProcessing && (
+                          <motion.div 
+                            initial={{ top: "0%" }}
+                            animate={{ top: "100%" }}
+                            transition={{ 
+                              duration: 2, 
+                              repeat: Infinity, 
+                              ease: "linear" 
+                            }}
+                            className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent z-10 shadow-[0_0_15px_rgba(59,130,246,0.8)]"
+                          >
+                            <div className="absolute top-0 left-0 right-0 h-[100px] bg-gradient-to-b from-blue-500/10 to-transparent -translate-y-full" />
+                          </motion.div>
+                        )}
+
+                        {croppedImageUrl && !isProcessing && (
                           <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
                             Cropped
                           </div>
