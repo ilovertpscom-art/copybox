@@ -772,19 +772,15 @@ useEffect(() => {
                 className="space-y-10"
               >
                 <div className="inline-flex items-center gap-3 px-5 py-2 bg-blue-50 border border-blue-100 rounded-full text-blue-700">
-                  <Star className="w-3.5 h-3.5 fill-blue-700" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Premium OCR Experience</span>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Next-Gen Hindi OCR Engine</span>
                 </div>
                 
-                <h1 className="text-[92px] leading-[0.88] font-black tracking-tighter text-gray-900 italic">
-                  Digital <span className="text-blue-600">Hindi</span><br />
-                  Extraction.
+                <h1 className="text-[72px] md:text-[92px] leading-[0.9] font-black tracking-tighter text-gray-900 italic">
+                  हाथ से लिखे पत्रों को<br />
+                  <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-orange-600 bg-clip-text text-transparent">डिजिटल आवेदन</span> में बदलें
                 </h1>
                 
-                <p className="text-xl text-gray-500 leading-relaxed max-w-lg font-medium">
-                  Convert images to editable Hindi text instantly with state-of-the-art AI. Fast, accurate, and secure.
-                </p>
-
                 <div className="flex flex-col sm:flex-row items-center gap-5 pt-4">
                   <button 
                     onClick={() => { setLoginMode("user"); setShowLoginPage(true); }}
@@ -814,7 +810,7 @@ useEffect(() => {
                       className="absolute top-0 left-0 w-full h-1 bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.8)] z-30"
                     />
                     <img 
-                      src="https://scontent.fpat1-2.fna.fbcdn.net/v/t39.30808-6/450951792_1151690239213892_6095705740747065292_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=1d70fc&_nc_ohc=qtlTD1qGO2AQ7kNvwG4ZcBF&_nc_oc=AdrrkDJ2rNVSvwcWyHyCHrl_5E-jvm6e04W1ciJ5S0GJOsTYCrtTDpWYhXXPELzfTcM&_nc_zt=23&_nc_ht=scontent.fpat1-2.fna&_nc_gid=z8UQli7wo7w5YEeOcMq6uQ&oh=00_Af069GLrsWDMG0OCe6JQCDDwE4lL1bt6sQNcmhDYJeYtbQ&oe=69EFFD28" 
+                      src="https://hi-static.z-dn.net/files/dc0/a62c0ed78ba7402366bad2ab64d178de.jpg" 
                       alt="Hindi OCR Pro Feature"
                       className="w-full h-full object-contain p-2 z-10"
                       referrerPolicy="no-referrer"
