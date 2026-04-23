@@ -25,10 +25,8 @@ service cloud.firestore {
 
     // Users collection
     match /users/{docId} {
-      // Allow read if signed in (to check roles etc)
-      // Hardened: only admin can list all users. Regular users can only get their own doc.
-      allow get: if isSignedIn();
-      allow list: if isAdmin();
+      // Allow searching for user status by username (needed for pre-login lock check)
+      allow list, get: if true; 
       
       // Validation for create/update
       function isValidUser(data) {
@@ -41,21 +39,23 @@ service cloud.firestore {
                data.createdAt is timestamp;
       }
 
-      function isNotLocked() {
-        return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'active';
+      function isOwner(userId) {
+        return isSignedIn() && request.auth.uid == userId;
       }
 
       allow create: if isSignedIn() && (
-        // Allow bootstrap or admin creation
         (request.resource.data.uid == request.auth.uid) || isAdmin()
       ) && isValidUser(request.resource.data);
 
       allow update: if isAdmin() || (
         isOwner(resource.data.uid) && 
-        isNotLocked() &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['credits']) &&
-        request.resource.data.credits == resource.data.credits - 1
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['credits'])
+      ) || (
+        // Allow unauthenticated update for security tracking (locking accounts)
+        request.resource.data.diff(resource.data).affectedKeys().hasAny(['failedAttempts', 'status', 'updatedAt']) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['failedAttempts', 'status', 'updatedAt'])
       );
+      
       allow delete: if isAdmin();
     }
   }
