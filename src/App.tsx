@@ -764,7 +764,7 @@ useEffect(() => {
                 <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg transform rotate-3">
                   <FileText className="text-white w-6 h-6" />
                 </div>
-                <span className="text-xl font-black tracking-tighter uppercase italic">Hindi OCR Pro</span>
+                <span className="text-xl font-black tracking-tighter uppercase italic bg-gradient-to-r from-blue-600 via-purple-600 to-orange-600 bg-clip-text text-transparent hover:drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all cursor-default">ScanHindi.com</span>
               </div>
               
               <div className="hidden md:flex items-center gap-10">
@@ -806,7 +806,10 @@ useEffect(() => {
                 </div>
                 
                 <h1 className="text-[64px] md:text-[92px] leading-[0.9] font-black tracking-tighter text-gray-900 italic">
-                  Hindi OCR: <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-orange-600 bg-clip-text text-transparent italic">Image to Text Hindi</span>
+                  हाथ से लिखे पत्रों <br />
+                  को <br />
+                  <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-orange-600 bg-clip-text text-transparent">डिजिटल आवेदन</span> <br />
+                  में बदलें
                 </h1>
                 
                 <h2 className="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-xl font-bold uppercase tracking-tight">
