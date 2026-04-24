@@ -761,8 +761,13 @@ useEffect(() => {
           <nav className="fixed top-0 left-0 w-full z-10 bg-white/80 backdrop-blur-xl border-b border-gray-100 px-6 py-5">
             <div className="max-w-7xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg transform rotate-3">
-                  <FileText className="text-white w-6 h-6" />
+                <div className="w-10 h-10 flex items-center justify-center transition-transform group-hover:scale-110">
+                  <img 
+                    src="https://i.ibb.co/9kZvGzyg/SCAN-HINDILOGO.png" 
+                    alt="ScanHindi Logo" 
+                    className="w-full h-full object-contain drop-shadow-sm"
+                    referrerPolicy="no-referrer"
+                  />
                 </div>
                 <span className="text-xl font-black tracking-tighter uppercase italic bg-gradient-to-r from-blue-600 via-purple-600 to-orange-600 bg-clip-text text-transparent hover:drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all cursor-default">ScanHindi.com</span>
               </div>
@@ -1362,8 +1367,13 @@ useEffect(() => {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-8">
                 <div className="md:col-span-1 space-y-8">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg transform rotate-3">
-                      <FileText className="text-white w-6 h-6" />
+                    <div className="w-10 h-10 flex items-center justify-center transition-transform group-hover:scale-110">
+                      <img 
+                        src="https://i.ibb.co/9kZvGzyg/SCAN-HINDILOGO.png" 
+                        alt="ScanHindi Logo" 
+                        className="w-full h-full object-contain"
+                        referrerPolicy="no-referrer"
+                      />
                     </div>
                     <span className="text-xl font-black tracking-tighter italic uppercase underline decoration-blue-500 decoration-4 underline-offset-4">ScanHindi.com</span>
                   </div>
