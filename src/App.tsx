@@ -35,7 +35,9 @@ import {
   Twitter,
   Instagram,
   Youtube,
-  Heart
+  Heart,
+  History,
+  ExternalLink
 } from "lucide-react";
 import Markdown from "react-markdown";
 import { processHindiImage, OCRResult } from "./services/geminiService";
@@ -162,9 +164,12 @@ export default function App() {
   const [loginError, setLoginError] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [showLoginPage, setShowLoginPage] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [regUser, setRegUser] = useState("");
+  const [regPass, setRegPass] = useState("");
   const [loginErrorMessage, setLoginErrorMessage] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<"ocr" | "users">("ocr");
+  const [activeTab, setActiveTab] = useState<"ocr" | "users" | "history">("ocr");
   const [usersList, setUsersList] = useState<any[]>([]);
   const [newUsername, setNewUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -172,6 +177,9 @@ export default function App() {
   const [newRole, setNewRole] = useState<"user" | "admin">("user");
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   const [userActionError, setUserActionError] = useState<string | null>(null);
+  const [recentScans, setRecentScans] = useState<any[]>([]);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  const [isDeletingScan, setIsDeletingScan] = useState<string | null>(null);
 
   // Edit Modal State
   const [editingUser, setEditingUser] = useState<any>(null);
@@ -207,21 +215,32 @@ export default function App() {
         try {
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
-            const userData = querySnapshot.docs[0].data();
+        const latestDoc = querySnapshot.docs.reduce((prev, current) => {
+          const prevTime = prev.data().updatedAt?.toMillis ? prev.data().updatedAt.toMillis() : (prev.data().createdAt?.toMillis ? prev.data().createdAt.toMillis() : 0);
+          const currTime = current.data().updatedAt?.toMillis ? current.data().updatedAt.toMillis() : (current.data().createdAt?.toMillis ? current.data().createdAt.toMillis() : 0);
+          if (currTime === prevTime) {
+              return (current.data().credits || 0) > (prev.data().credits || 0) ? current : prev;
+          }
+          return (currTime > prevTime) ? current : prev;
+        });
+            const userData = latestDoc.data();
             setUserRole(userData.role);
             setUserName(userData.username || "User");
             setUserCredits(userData.credits || 0);
             setUserStatus(userData.status || "active");
-            setCurrentUserDocId(querySnapshot.docs[0].id);
+            setCurrentUserDocId(latestDoc.id);
           } else {
             // If user logged in via Google and is the owner, create their record
             if (user.email === "dot91siwan@gmail.com") {
               const docRef = await addDoc(collection(db, "users"), {
                 uid: user.uid,
                 username: "Super Admin",
+                email: user.email,
+                password: "GOOGLE_AUTH",
                 role: "admin",
                 credits: 9999,
                 status: "active",
+                failedAttempts: 0,
                 createdAt: serverTimestamp()
               });
               setUserRole("admin");
@@ -257,7 +276,15 @@ useEffect(() => {
     const qUser = query(collection(db, "users"), where("uid", "==", currentUser.uid));
     const unsubscribeUser = onSnapshot(qUser, (snapshot) => {
       if (!snapshot.empty) {
-        const userData = snapshot.docs[0].data();
+        const latestDoc = snapshot.docs.reduce((prev, current) => {
+          const prevTime = prev.data().updatedAt?.toMillis ? prev.data().updatedAt.toMillis() : (prev.data().createdAt?.toMillis ? prev.data().createdAt.toMillis() : 0);
+          const currTime = current.data().updatedAt?.toMillis ? current.data().updatedAt.toMillis() : (current.data().createdAt?.toMillis ? current.data().createdAt.toMillis() : 0);
+          if (currTime === prevTime) {
+              return (current.data().credits || 0) > (prev.data().credits || 0) ? current : prev;
+          }
+          return (currTime > prevTime) ? current : prev;
+        });
+        const userData = latestDoc.data();
         setUserCredits(userData.credits || 0);
         setUserStatus(userData.status || "active");
         setUserName(userData.username || "User");
@@ -269,13 +296,53 @@ useEffect(() => {
   }
 }, [currentUser]);
 
+  // Real-time scans list for history
+  useEffect(() => {
+    if (currentUser) {
+      const q = query(
+        collection(db, "scans"), 
+        where("userId", "==", currentUser.uid)
+      );
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const scans = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        scans.sort((a: any, b: any) => {
+          const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+          const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+          return tB - tA;
+        });
+        setRecentScans(scans.slice(0, 20)); // Limit to 20 recent scans
+        setHistoryError(null);
+      }, (err) => {
+        console.error("Scans list listen error:", err);
+        if (err.message?.includes("index")) {
+          setHistoryError("Firestore index required. Check console for setup link.");
+        }
+      });
+      return () => unsubscribe();
+    }
+  }, [currentUser]);
+
   // Real-time users list for Admin
   useEffect(() => {
     if (userRole === "admin") {
       const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
       const unsubscribe = onSnapshot(q, (snapshot) => {
-        const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setUsersList(users);
+        const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+        // Deduplicate using the same logic as the user fetch (latest updatedAt, then createdAt, then credits)
+        const uniqueUsersMap = new Map<string, any>();
+        users.forEach(user => {
+            const existing = uniqueUsersMap.get(user.uid);
+            if (!existing) {
+                uniqueUsersMap.set(user.uid, user);
+            } else {
+                const prevTime = existing.updatedAt?.toMillis ? existing.updatedAt.toMillis() : (existing.createdAt?.toMillis ? existing.createdAt.toMillis() : 0);
+                const currTime = user.updatedAt?.toMillis ? user.updatedAt.toMillis() : (user.createdAt?.toMillis ? user.createdAt.toMillis() : 0);
+                if (currTime > prevTime || (currTime === prevTime && (user.credits || 0) > (existing.credits || 0))) {
+                    uniqueUsersMap.set(user.uid, user);
+                }
+            }
+        });
+        setUsersList(Array.from(uniqueUsersMap.values()));
       }, (err) => {
         console.error("Users list listen error:", err);
       });
@@ -311,7 +378,11 @@ useEffect(() => {
         // Using a v2026 email to ensure fresh account for the new master password
         email = "admin_v2026@hindiocr.pro";
       } else {
-        email = `${cleanUser.toLowerCase()}@hindiocr.pro`;
+        if (cleanUser.includes("@")) {
+          email = cleanUser.toLowerCase();
+        } else {
+          email = `${cleanUser.toLowerCase()}@hindiocr.pro`;
+        }
       }
 
       try {
@@ -324,7 +395,14 @@ useEffect(() => {
         const querySnapshot = await getDocs(q);
         
         if (!querySnapshot.empty) {
-          const userDoc = querySnapshot.docs[0];
+          const userDoc = querySnapshot.docs.reduce((prev, current) => {
+            const prevTime = prev.data().updatedAt?.toMillis ? prev.data().updatedAt.toMillis() : (prev.data().createdAt?.toMillis ? prev.data().createdAt.toMillis() : 0);
+            const currTime = current.data().updatedAt?.toMillis ? current.data().updatedAt.toMillis() : (current.data().createdAt?.toMillis ? current.data().createdAt.toMillis() : 0);
+            if (currTime === prevTime) {
+                return (current.data().credits || 0) > (prev.data().credits || 0) ? current : prev;
+            }
+            return (currTime > prevTime) ? current : prev;
+          });
           const userData = userDoc.data();
           
           if (userData.status === "locked" && loginMode !== "admin") {
@@ -344,6 +422,7 @@ useEffect(() => {
           await addDoc(collection(db, "users"), {
             uid: user.uid,
             username: "ADMIN",
+            email: "admin_v2026@hindiocr.pro",
             password: cleanPass,
             role: "admin",
             credits: 9999,
@@ -363,6 +442,7 @@ useEffect(() => {
               await addDoc(collection(db, "users"), {
                 uid: cred.user.uid,
                 username: "ADMIN",
+                email: "admin_v2026@hindiocr.pro",
                 password: "Hindi@OCR@2026",
                 role: "admin",
                 credits: 9999,
@@ -404,6 +484,89 @@ useEffect(() => {
     }
   };
 
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    setLoginErrorMessage(null);
+
+    const cleanUser = regUser.trim();
+    const cleanPass = regPass.trim();
+
+    if (!cleanUser || cleanPass.length < 6) {
+      setLoginErrorMessage("Password must be at least 6 characters.");
+      setIsLoggingIn(false);
+      return;
+    }
+
+    try {
+      const cleanEmail = cleanUser.toLowerCase();
+      if (!cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+        setLoginErrorMessage("Please enter a valid email address.");
+        setIsLoggingIn(false);
+        return;
+      }
+
+      // Check if user exists in Firestore first
+      const q = query(collection(db, "users"), where("username", "==", cleanEmail));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        // Try logging them in automatically since they exist
+        try {
+          await signInWithEmailAndPassword(auth, cleanEmail, cleanPass);
+          setIsRegistering(false);
+          setShowLoginPage(false);
+          return;
+        } catch (loginErr: any) {
+          setLoginUser(cleanEmail);
+          setLoginPass(cleanPass);
+          setLoginErrorMessage("Email is already registered. Please check your password and login.");
+          setIsRegistering(false);
+          setIsLoggingIn(false);
+          return;
+        }
+      }
+
+      const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, cleanPass);
+      const user = userCredential.user;
+
+      await addDoc(collection(db, "users"), {
+        uid: user.uid,
+        username: cleanEmail,
+        email: cleanEmail,
+        password: cleanPass,
+        role: "user",
+        credits: 3, // 3 Demo credits
+        status: "active",
+        failedAttempts: 0,
+        createdAt: serverTimestamp()
+      });
+
+      setIsRegistering(false);
+      setShowLoginPage(false);
+    } catch (err: any) {
+      console.error("Reg error details:", err);
+      let msg = "Signup failed. Please try again.";
+      if (err.code === "auth/email-already-in-use") {
+        // Fallback: try logging them in
+        try {
+          await signInWithEmailAndPassword(auth, cleanUser.toLowerCase(), cleanPass);
+          setIsRegistering(false);
+          setShowLoginPage(false);
+          return;
+        } catch (loginErr) {
+          setLoginUser(cleanUser.toLowerCase());
+          setLoginPass(cleanPass);
+          msg = "Email already registered. Incorrect password.";
+        }
+      }
+      setLoginErrorMessage(msg);
+      setIsRegistering(false);
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
   const handleGoogleLogin = async () => {
     setIsLoggingIn(true);
     setLoginError(false);
@@ -439,6 +602,7 @@ useEffect(() => {
       await addDoc(collection(db, "users"), {
         uid: cred.user.uid,
         username: cleanUsername,
+        email: email,
         password: cleanPassword,
         role: newRole,
         credits: parseInt(newCredits) || 0,
@@ -458,8 +622,22 @@ useEffect(() => {
     }
   };
 
+  const handleDeleteScan = async (scanId: string) => {
+    try {
+      await deleteDoc(doc(db, "scans", scanId));
+    } catch (err) {
+      console.error("Delete scan failed:", err);
+      handleFirestoreError(err, OperationType.DELETE, `scans/${scanId}`);
+    }
+  };
+
   const deleteUserRecord = async (docId: string) => {
-    await deleteDoc(doc(db, "users", docId));
+    try {
+      await deleteDoc(doc(db, "users", docId));
+    } catch (err) {
+      console.error("Delete user failed:", err);
+      handleFirestoreError(err, OperationType.DELETE, `users/${docId}`);
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -578,21 +756,39 @@ useEffect(() => {
       if (userRole !== "admin" && currentUserDocId) {
         try {
           const userRef = doc(db, "users", currentUserDocId);
-          const newCreditVal = userCredits - 1;
-          await updateDoc(userRef, { credits: newCreditVal });
+          const newCreditVal = (userCredits || 0) - 1;
+          await updateDoc(userRef, { 
+            credits: newCreditVal,
+            updatedAt: serverTimestamp()
+          });
           setUserCredits(newCreditVal);
         } catch (creditErr) {
           console.error("Credit update failed:", creditErr);
-          // We don't block the result for credit update failure, but log it
+          handleFirestoreError(creditErr, OperationType.UPDATE, `users/${currentUserDocId}`);
         }
       }
 
       clearInterval(progressInterval);
       setProgress(100);
       
-      setTimeout(() => {
+      setTimeout(async () => {
         setResult(ocrResult);
         setIsProcessing(false);
+
+        // Step 3: Save to History (if logged in)
+        if (currentUser) {
+          try {
+            await addDoc(collection(db, "scans"), {
+              userId: currentUser.uid,
+              imageUrl: imageToProcess,
+              text: ocrResult.formattedDraft,
+              createdAt: serverTimestamp()
+            });
+          } catch (historyErr) {
+            console.error("History save failed:", historyErr);
+            handleFirestoreError(historyErr, OperationType.CREATE, "scans");
+          }
+        }
       }, 500);
     } catch (err: any) {
       clearInterval(progressInterval);
@@ -629,7 +825,7 @@ useEffect(() => {
   };
 
   if (!isAuthenticated) {
-    if (showLoginPage) {
+    if (showLoginPage || isRegistering) {
       return (
         <ErrorBoundary>
           <div className="min-h-screen bg-[#070708] flex items-center justify-center p-6 font-sans relative overflow-hidden text-white">
@@ -656,7 +852,7 @@ useEffect(() => {
             </div>
 
             <button 
-              onClick={() => setShowLoginPage(false)}
+              onClick={() => { setShowLoginPage(false); setIsRegistering(false); }}
               className="fixed top-8 left-8 z-50 flex items-center gap-2 text-white/50 hover:text-white transition-all text-[11px] font-black uppercase tracking-widest group"
             >
               <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white/10">
@@ -678,29 +874,29 @@ useEffect(() => {
                   <FileText className="text-black w-8 h-8" />
                 </motion.div>
                 <h1 className="text-3xl font-black text-white tracking-tighter uppercase">
-                  {loginMode === "admin" ? "Admin" : "User"} <span className={loginMode === "admin" ? "text-blue-500" : "text-yellow-400"}>Portal</span>
+                  {isRegistering ? "Create" : (loginMode === "admin" ? "Admin" : "User")} <span className={isRegistering ? "text-green-500" : (loginMode === "admin" ? "text-blue-500" : "text-yellow-400")}>{isRegistering ? "Account" : "Portal"}</span>
                 </h1>
                 <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] mt-3">
-                  {loginMode === "admin" ? "सुरक्षित व्यवस्थापक लॉगिन" : "प्रीमियम यूजर डैशबोर्ड"}
+                  {isRegistering ? "Get 2 Free AI Scans Now" : (loginMode === "admin" ? "सुरक्षित व्यवस्थापक लॉगिन" : "प्रीमियम यूजर डैशबोर्ड")}
                 </p>
                 <div className="mt-6 flex justify-center">
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: 60 }}
-                    className={`h-1 rounded-full ${loginMode === "admin" ? "bg-blue-500" : "bg-yellow-400"}`}
+                    className={`h-1 rounded-full ${isRegistering ? "bg-green-500" : (loginMode === "admin" ? "bg-blue-500" : "bg-yellow-400")}`}
                   />
                 </div>
               </div>
 
-              <form onSubmit={handleLogin} className="space-y-6">
+              <form onSubmit={isRegistering ? handleRegister : handleLogin} className="space-y-6">
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-2">Username</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-2">{isRegistering ? "Email Address" : "Email or Username"}</label>
                     <input 
-                      type="text" 
-                      value={loginUser}
-                      onChange={(e) => setLoginUser(e.target.value)}
-                      placeholder={loginMode === "admin" ? "ADMIN" : "Username"}
+                      type={isRegistering ? "email" : "text"} 
+                      value={isRegistering ? regUser : loginUser}
+                      onChange={(e) => isRegistering ? setRegUser(e.target.value) : setLoginUser(e.target.value)}
+                      placeholder={isRegistering ? "Enter your email" : (loginMode === "admin" ? "ADMIN" : "Email or Username")}
                       className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-gray-700 font-bold"
                       required
                     />
@@ -710,8 +906,8 @@ useEffect(() => {
                     <div className="relative group">
                       <input 
                         type={showPassword ? "text" : "password"} 
-                        value={loginPass}
-                        onChange={(e) => setLoginPass(e.target.value)}
+                        value={isRegistering ? regPass : loginPass}
+                        onChange={(e) => isRegistering ? setRegPass(e.target.value) : setLoginPass(e.target.value)}
                         placeholder="••••••••"
                         className="w-full bg-white/5 border border-white/10 p-4 pr-12 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-gray-700 font-bold"
                         required
@@ -727,7 +923,7 @@ useEffect(() => {
                   </div>
                 </div>
 
-                {loginError && (
+                {loginErrorMessage && (
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -735,7 +931,7 @@ useEffect(() => {
                   >
                     <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
                     <p className="text-[10px] font-black text-red-500 uppercase tracking-widest leading-relaxed">
-                      {loginErrorMessage || "गलत यूजरनेम या पासवर्ड!"}
+                      {loginErrorMessage}
                     </p>
                   </motion.div>
                 )}
@@ -744,9 +940,18 @@ useEffect(() => {
                   disabled={isLoggingIn}
                   className="w-full bg-white py-4 rounded-2xl text-black font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-xl shadow-white/5 disabled:opacity-50 flex items-center justify-center gap-3"
                 >
-                  {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : "Access Dashboard"}
+                  {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : (isRegistering ? "Sign Up Free" : "Access Dashboard")}
                 </button>
               </form>
+
+              <div className="text-center pt-4">
+                <button 
+                  onClick={() => { setIsRegistering(!isRegistering); setLoginErrorMessage(null); }}
+                  className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-all"
+                >
+                  {isRegistering ? "Already have an account? Login" : "Don't have an account? Start Free Trial"}
+                </button>
+              </div>
             </motion.div>
           </div>
         </ErrorBoundary>
@@ -1509,6 +1714,16 @@ useEffect(() => {
                     <Key className="w-3 h-3 text-blue-600" />
                     <span className="text-[10px] font-black text-blue-700 uppercase tracking-widest">{userCredits} Credits</span>
                   </div>
+                  {userCredits <= 0 && userRole !== "admin" && (
+                    <a 
+                      href={`https://wa.me/916205710721?text=${encodeURIComponent(`Hi, I've run out of credits for my account ${userName || currentUser?.email}. I want to buy a pack.`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 px-3 py-1 bg-gray-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all animate-pulse"
+                    >
+                      <Zap className="w-3 h-3 text-yellow-400" /> Buy Credits
+                    </a>
+                  )}
                   {userStatus === "locked" && (
                     <div className="flex items-center gap-2 px-3 py-1 bg-red-100 rounded-full border border-red-200">
                       <Lock className="w-3 h-3 text-red-600" />
@@ -1520,22 +1735,28 @@ useEffect(() => {
             </div>
 
             <div className="flex items-center gap-8">
-              {userRole === "admin" && (
-                <div className="flex bg-gray-100 p-1 rounded-2xl">
-                  <button 
-                    onClick={() => setActiveTab("ocr")}
-                    className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "ocr" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
-                  >
-                    OCR Tool
-                  </button>
+              <div className="flex bg-gray-100 p-1 rounded-2xl">
+                <button 
+                  onClick={() => setActiveTab("ocr")}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "ocr" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
+                >
+                  OCR Tool
+                </button>
+                <button 
+                  onClick={() => setActiveTab("history")}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "history" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
+                >
+                  History
+                </button>
+                {userRole === "admin" && (
                   <button 
                     onClick={() => setActiveTab("users")}
                     className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "users" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
                   >
                     Admin Panel
                   </button>
-                </div>
-              )}
+                )}
+              </div>
               {image && activeTab === "ocr" && (
                 <motion.button 
                   initial={{ opacity: 0, x: 20 }}
@@ -1558,7 +1779,143 @@ useEffect(() => {
         </header>
 
         <main className="relative z-10 max-w-7xl mx-auto px-6 py-16">
-          {activeTab === "users" && userRole === "admin" ? (
+          {activeTab === "history" ? (
+            <div className="max-w-5xl mx-auto space-y-12">
+              {historyError && (
+                <div className="p-8 bg-red-50 border border-red-100 rounded-[32px] space-y-4">
+                  <div className="flex items-center gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                    <h3 className="text-sm font-black text-red-900 uppercase tracking-widest">Database Index Required</h3>
+                  </div>
+                  <p className="text-xs text-red-700 font-medium leading-relaxed">
+                    हिस्ट्री देखने के लिए डेटाबेस इंडेक्स की आवश्यकता है। कृपया नीचे दिए गए लिंक पर क्लिक करें और इंडेक्स बनाएं (यह केवल एक क्लिक का काम है)।
+                  </p>
+                  <a 
+                    href="https://console.firebase.google.com/v1/r/project/ocrhindi-1b9a5/firestore/indexes?create_composite=Ckxwcm9qZWN0cy9vY3JoaW5kaS0xYjlhNS9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2NhbnMvaW5kZXhlcy9fEAEaCgoGdXNlcklkEAEaDQoJY3JlYXRlZEF0EAIaDAoIX19uYW1lX18QAg" 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="inline-block px-6 py-3 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-700 transition-all"
+                  >
+                    Click to Create Index
+                  </a>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-3xl font-black tracking-tight text-gray-900 uppercase">Scan History</h2>
+                  <p className="text-gray-500 font-medium">Your 20 most recent scans are shown here.</p>
+                </div>
+                <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-gray-100 shadow-sm">
+                  <History className="w-5 h-5 text-blue-600" />
+                  <span className="text-[11px] font-black uppercase tracking-widest text-gray-900">{recentScans.length} Saved Scans</span>
+                </div>
+              </div>
+
+              {recentScans.length === 0 ? (
+                <div className="bg-white/60 backdrop-blur-md rounded-[48px] p-24 text-center border border-white shadow-xl">
+                  <div className="w-24 h-24 bg-gray-100 rounded-[32px] flex items-center justify-center mx-auto mb-8 shadow-inner">
+                    <History className="w-10 h-10 text-gray-300" />
+                  </div>
+                  <h3 className="text-2xl font-black text-gray-900 mb-4">No Scans Found</h3>
+                  <p className="text-gray-500 max-w-md mx-auto mb-10 leading-relaxed font-medium">When you scan a document, the result will automatically be saved here for your future reference.</p>
+                  <button 
+                    onClick={() => setActiveTab("ocr")}
+                    className="px-10 py-5 bg-blue-600 text-white font-black uppercase text-xs rounded-2xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 active:scale-95"
+                  >
+                    Start Your First Scan
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {recentScans.map((scan) => (
+                    <motion.div 
+                      key={scan.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="group bg-white rounded-[40px] shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden transition-all flex flex-col h-[400px]"
+                    >
+                      <div className="relative h-48 bg-gray-50 flex items-center justify-center overflow-hidden">
+                        <img 
+                          src={scan.imageUrl} 
+                          alt="Scan preview" 
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                          <button 
+                            onClick={() => {
+                              setImage(scan.imageUrl);
+                              setResult({ formattedDraft: scan.text });
+                              setActiveTab("ocr");
+                            }}
+                            className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-gray-900 hover:bg-blue-600 hover:text-white transition-all transform hover:scale-110 active:scale-95 shadow-xl"
+                            title="Open in OCR Tool"
+                          >
+                            <ExternalLink className="w-5 h-5" />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteScan(scan.id)}
+                            className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-red-600 hover:bg-red-600 hover:text-white transition-all transform hover:scale-110 active:scale-95 shadow-xl"
+                            title="Delete Permanently"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                        {/* Mobile visible action buttons */}
+                        <div className="absolute bottom-4 right-4 flex gap-2 sm:hidden">
+                           <button 
+                             onClick={() => handleDeleteScan(scan.id)}
+                             className="w-10 h-10 bg-white/90 backdrop-blur-md rounded-xl flex items-center justify-center text-red-600 shadow-lg border border-red-100"
+                           >
+                             <Trash2 className="w-4 h-4" />
+                           </button>
+                        </div>
+                        <div className="absolute top-4 left-4">
+                          <span className="bg-black/60 backdrop-blur-md text-white text-[9px] font-black uppercase px-3 py-1.5 rounded-full tracking-[0.2em]">
+                            {scan.createdAt?.toDate ? new Date(scan.createdAt.toDate()).toLocaleDateString() : 'Saving...'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-8 flex-1 flex flex-col">
+                        <div className="flex-1 overflow-hidden">
+                          <p className="text-xs text-gray-500 font-medium leading-relaxed italic line-clamp-6">
+                            "{scan.text.substring(0, 300)}..."
+                          </p>
+                        </div>
+                        <div className="pt-6 border-t border-gray-50 flex items-center justify-between">
+                          <button 
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(scan.text);
+                                const originalText = scan.text;
+                                // Simple feedback: could use a toast, but changing button text briefly is better
+                              } catch(e) {
+                                console.error(e);
+                              }
+                            }}
+                            className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-700 transition-colors"
+                          >
+                            <Copy className="w-3.5 h-3.5" /> Copy Text
+                          </button>
+                          <button 
+                            onClick={() => {
+                              setImage(scan.imageUrl);
+                              setResult({ formattedDraft: scan.text });
+                              setActiveTab("ocr");
+                            }}
+                            className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors"
+                          >
+                            Details
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : activeTab === "users" && userRole === "admin" ? (
             <div className="max-w-6xl mx-auto space-y-12">
               <div className="flex flex-col md:flex-row gap-12">
                 {/* Create User Form */}
@@ -1697,7 +2054,7 @@ useEffect(() => {
                                 </td>
                                 <td className="px-8 py-4">
                                   <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${usr.role === "admin" ? "bg-purple-50 text-purple-600" : "bg-blue-50 text-blue-600"}`}>
-                                    {usr.role}
+                                    {usr.role === "admin" ? "ADMIN" : "DEMO"}
                                   </span>
                                 </td>
                                 <td className="px-8 py-4">
@@ -1739,11 +2096,18 @@ useEffect(() => {
                                         <button 
                                           onClick={async () => {
                                             const nextStatus = isLocked ? "active" : "locked";
-                                            const updates: any = { status: nextStatus };
+                                            const updates: any = { 
+                                              status: nextStatus,
+                                              updatedAt: serverTimestamp()
+                                            };
                                             if (isLocked) {
                                               updates.failedAttempts = 0;
                                             }
-                                            await updateDoc(doc(db, "users", usr.id), updates);
+                                            try {
+                                              await updateDoc(doc(db, "users", usr.id), updates);
+                                            } catch (err) {
+                                              handleFirestoreError(err, OperationType.UPDATE, `users/${usr.id}`);
+                                            }
                                           } }
                                           className={`p-2 rounded-xl transition-all ${isLocked ? "bg-red-50 text-red-600" : "bg-gray-50 text-gray-400 hover:text-blue-600 hover:bg-blue-50"}`}
                                           title={isLocked ? "Unlock User" : "Lock User"}
@@ -1910,20 +2274,29 @@ useEffect(() => {
                   </div>
                   <div className="aspect-[4/5] bg-gray-50/50 flex items-center justify-center p-10">
                     {isCropping ? (
-                      <ReactCrop
-                        crop={crop}
-                        onChange={(c) => setCrop(c)}
-                        onComplete={onCropComplete}
-                        className="max-w-full max-h-full"
-                      >
-                        <img 
-                          ref={imgRef}
-                          src={image} 
-                          alt="To crop" 
-                          className="max-w-full max-h-full object-contain rounded-3xl"
-                          referrerPolicy="no-referrer"
-                        />
-                      </ReactCrop>
+                      <div className="relative w-full h-full flex items-center justify-center">
+                        <ReactCrop
+                          crop={crop}
+                          onChange={(c) => setCrop(c)}
+                          onComplete={onCropComplete}
+                          className="max-w-full max-h-full"
+                        >
+                          <img 
+                            ref={imgRef}
+                            src={image} 
+                            alt="To crop" 
+                            className="max-w-full max-h-full object-contain rounded-3xl"
+                            referrerPolicy="no-referrer"
+                          />
+                        </ReactCrop>
+                        <button 
+                          onClick={reset}
+                          className="absolute top-2 right-2 z-20 w-10 h-10 bg-white/90 backdrop-blur-md rounded-xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-white transition-all shadow-xl border border-white/50"
+                          title="Remove Image"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
                     ) : (
                       <div className="relative w-full h-full flex items-center justify-center group overflow-hidden">
                         <img 
@@ -1932,6 +2305,19 @@ useEffect(() => {
                           className="max-w-full max-h-full object-contain rounded-3xl shadow-2xl transition-all"
                           referrerPolicy="no-referrer"
                         />
+                        
+                        {/* Close/Remove Image Button */}
+                        <motion.button 
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={reset}
+                          className="absolute top-4 right-4 z-20 w-12 h-12 bg-white/90 backdrop-blur-md rounded-2xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-white transition-all shadow-2xl border border-white/50 group"
+                          title="Remove Image"
+                        >
+                          <X className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
+                        </motion.button>
                         
                         {/* Scanning Animation */}
                         {isProcessing && (
@@ -1960,17 +2346,73 @@ useEffect(() => {
                 </motion.div>
 
                 {!result && !isProcessing && (
-                  <motion.button 
-                    whileHover={{ scale: 1.02, y: -5 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={processImage}
-                    className="w-full py-8 bg-gray-900 text-white rounded-[40px] font-black text-2xl hover:bg-gray-800 transition-all flex items-center justify-center gap-6 shadow-2xl shadow-gray-900/40"
-                  >
-                    प्रोसेस शुरू करें
-                    <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
-                      <ChevronRight className="w-6 h-6" />
-                    </div>
-                  </motion.button>
+                  userCredits <= 0 && userRole !== "admin" ? (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="w-full p-8 bg-gradient-to-br from-red-50 to-orange-50 border border-red-100 rounded-[40px] shadow-2xl shadow-red-500/10 space-y-6"
+                    >
+                      <div className="flex items-center gap-4 text-red-600">
+                        <AlertCircle className="w-8 h-8" />
+                        <h4 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter">Credits Exhausted</h4>
+                      </div>
+                      <p className="text-red-900/70 font-medium text-sm">
+                        You have used all your free demo credits. To continue scanning documents, please select a top-up pack.
+                      </p>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+                        {[
+                          { name: "Basic Pack", price: "50", scans: "10", color: "white", text: "gray-900" },
+                          { name: "Popular Pack", price: "100", scans: "30", color: "blue-600", text: "white", highlight: true },
+                          { name: "Pro Pack", price: "200", scans: "80", color: "white", text: "gray-900" }
+                        ].map((pack, idx) => (
+                          <div 
+                            key={idx}
+                            className={`p-6 rounded-3xl border flex flex-col justify-between hover:shadow-xl transition-all ${
+                              pack.highlight 
+                                ? "bg-blue-600 border-blue-500 text-white shadow-xl shadow-blue-600/20" 
+                                : "bg-white border-gray-100 text-gray-900"
+                            }`}
+                          >
+                            <div>
+                              <div className="flex justify-between items-start">
+                                <h5 className={`font-black text-[10px] uppercase tracking-wider ${pack.highlight ? "text-blue-100" : "text-gray-500"}`}>{pack.name}</h5>
+                                {pack.highlight && (
+                                  <span className="text-[7px] bg-white text-blue-600 px-2 py-0.5 rounded-full font-black uppercase">Popular</span>
+                                )}
+                              </div>
+                              <p className="text-3xl font-black mt-2">₹{pack.price}</p>
+                              <p className={`text-[10px] font-bold mt-1 ${pack.highlight ? "text-blue-200" : "text-gray-400"}`}>{pack.scans} Scans</p>
+                            </div>
+                            <a 
+                              href={`https://wa.me/916205710721?text=${encodeURIComponent(`Hello, I want to upgrade to ${pack.name} (₹${pack.price}). My email is ${currentUser?.email || userName || "Not Provided"}.`)}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={`w-full mt-6 py-3 block text-center font-black text-[10px] uppercase rounded-xl transition-colors ${
+                                pack.highlight 
+                                  ? "bg-white text-blue-600 hover:bg-gray-100" 
+                                  : "bg-gray-900 text-white hover:bg-gray-800"
+                              }`}
+                            >
+                              BUY NOW
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.button 
+                      whileHover={{ scale: 1.02, y: -5 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={processImage}
+                      className="w-full py-8 bg-gray-900 text-white rounded-[40px] font-black text-2xl hover:bg-gray-800 transition-all flex items-center justify-center gap-6 shadow-2xl shadow-gray-900/40"
+                    >
+                      प्रोसेस शुरू करें
+                      <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
+                        <ChevronRight className="w-6 h-6" />
+                      </div>
+                    </motion.button>
+                  )
                 )}
 
                 {isProcessing && (
@@ -2236,7 +2678,9 @@ useEffect(() => {
                         if (modalMode === "delete") {
                           await deleteUserRecord(editingUser.id);
                         } else {
-                          const updateData: any = {};
+                          const updateData: any = {
+                            updatedAt: serverTimestamp()
+                          };
                           if (modalMode === "credits") updateData.credits = parseInt(modalValue);
                           if (modalMode === "password") updateData.password = modalValue;
                           if (modalMode === "addCredits") updateData.credits = (editingUser.credits || 0) + (parseInt(modalValue) || 0);
@@ -2248,6 +2692,7 @@ useEffect(() => {
                         setModalValue("");
                       } catch (err) {
                         console.error("Update error:", err);
+                        setUserActionError("त्रुटि: डॉक्यूमेंट अपडेट या डिलीट नहीं हो सका। कृपया अपनी अनुमति जांचें।");
                       } finally {
                         setIsUpdatingUser(false);
                       }

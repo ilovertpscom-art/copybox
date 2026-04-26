@@ -13,7 +13,7 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() && (
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
         request.auth.token.email == 'admin@hindiocr.pro' ||
         request.auth.token.email == 'dot91siwan@gmail.com'
       );
@@ -26,21 +26,22 @@ service cloud.firestore {
     // Users collection
     match /users/{docId} {
       // Allow searching for user status by username (needed for pre-login lock check)
-      allow list, get: if true; 
+      // Restricted to only what is absolutely necessary
+      allow get: if true;
+      allow list: if isAdmin();
       
       // Validation for create/update
       function isValidUser(data) {
         return data.uid is string && 
                data.username is string && data.username.size() <= 100 &&
                data.role in ['user', 'admin'] &&
-               data.password is string &&
+               (!('password' in data) || data.password is string) &&
                data.credits is number &&
                data.status in ['active', 'locked'] &&
-               data.createdAt is timestamp;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
+               (!('email' in data) || data.email is string) &&
+               (!('failedAttempts' in data) || data.failedAttempts is number) &&
+               (!('createdAt' in data) || data.createdAt is timestamp) &&
+               (!('updatedAt' in data) || data.updatedAt is timestamp);
       }
 
       allow create: if isSignedIn() && (
@@ -49,14 +50,31 @@ service cloud.firestore {
 
       allow update: if isAdmin() || (
         isOwner(resource.data.uid) && 
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['credits'])
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['credits', 'updatedAt'])
       ) || (
         // Allow unauthenticated update for security tracking (locking accounts)
-        request.resource.data.diff(resource.data).affectedKeys().hasAny(['failedAttempts', 'status', 'updatedAt']) &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['failedAttempts', 'status', 'updatedAt'])
+        // Note: resource is available here because it's an update
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['failedAttempts', 'status', 'updatedAt', 'password'])
       );
       
       allow delete: if isAdmin();
+    }
+
+    // Scans collection for recent history
+    match /scans/{scanId} {
+      allow list: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow get: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      
+      function isValidScan(data) {
+        return data.userId is string &&
+               data.imageUrl is string &&
+               data.text is string &&
+               data.createdAt is timestamp;
+      }
+
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid && isValidScan(request.resource.data);
+      allow delete: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow update: if false; // Scans are immutable history
     }
   }
 }
