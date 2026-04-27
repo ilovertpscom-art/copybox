@@ -47,13 +47,15 @@ import {
   query, 
   where, 
   getDocs, 
+  getDoc,
   addDoc, 
   deleteDoc, 
   doc, 
   serverTimestamp,
   onSnapshot,
   orderBy,
-  updateDoc
+  updateDoc,
+  increment
 } from "firebase/firestore";
 import firebaseConfig from "../firebase-applet-config.json";
 import { initializeApp, deleteApp } from "firebase/app";
@@ -215,14 +217,14 @@ export default function App() {
         try {
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
-        const latestDoc = querySnapshot.docs.reduce((prev, current) => {
-          const prevTime = prev.data().updatedAt?.toMillis ? prev.data().updatedAt.toMillis() : (prev.data().createdAt?.toMillis ? prev.data().createdAt.toMillis() : 0);
-          const currTime = current.data().updatedAt?.toMillis ? current.data().updatedAt.toMillis() : (current.data().createdAt?.toMillis ? current.data().createdAt.toMillis() : 0);
-          if (currTime === prevTime) {
-              return (current.data().credits || 0) > (prev.data().credits || 0) ? current : prev;
-          }
-          return (currTime > prevTime) ? current : prev;
-        });
+            const latestDoc = querySnapshot.docs.reduce((prev, current) => {
+              const prevTime = prev.data().updatedAt?.toMillis ? prev.data().updatedAt.toMillis() : (prev.data().createdAt?.toMillis ? prev.data().createdAt.toMillis() : 0);
+              const currTime = current.data().updatedAt?.toMillis ? current.data().updatedAt.toMillis() : (current.data().createdAt?.toMillis ? current.data().createdAt.toMillis() : 0);
+              if (currTime === prevTime) {
+                  return (current.data().credits || 0) > (prev.data().credits || 0) ? current : prev;
+              }
+              return (currTime > prevTime) ? current : prev;
+            });
             const userData = latestDoc.data();
             setUserRole(userData.role);
             setUserName(userData.username || "User");
@@ -247,6 +249,11 @@ export default function App() {
               setUserName("Super Admin");
               setUserCredits(9999);
               setCurrentUserDocId(docRef.id);
+            } else if (user.email !== "admin_v2026@hindiocr.pro" && user.email !== "admin@hindiocr.pro") {
+              // If Firestore record is missing and it's not a special admin, sign out
+              await signOut(auth);
+              setIsAuthenticated(false);
+              setCurrentUser(null);
             }
           }
           
@@ -289,6 +296,9 @@ useEffect(() => {
         setUserStatus(userData.status || "active");
         setUserName(userData.username || "User");
         if (userData.role) setUserRole(userData.role);
+      } else if (currentUser && userRole !== "admin") {
+        // If doc disappears and user is not an admin, sign out
+        signOut(auth);
       }
     });
 
@@ -407,7 +417,7 @@ useEffect(() => {
           
           if (userData.status === "locked" && loginMode !== "admin") {
             await signOut(auth);
-            setLoginErrorMessage("This account is LOCKED. Please contact support.");
+            setLoginErrorMessage("यह अकाउंट लॉक है। कृपया सहायता के लिए संपर्क करें।");
             setLoginError(true);
             setIsLoggingIn(false);
             return;
@@ -430,6 +440,13 @@ useEffect(() => {
             failedAttempts: 0,
             createdAt: serverTimestamp()
           });
+        } else {
+          // For regular users, if doc is missing, they were likely deleted
+          await signOut(auth);
+          setLoginErrorMessage("Account not found or has been deleted.");
+          setLoginError(true);
+          setIsLoggingIn(false);
+          return;
         }
       } catch (authErr: any) {
         console.warn("Auth Error Code:", authErr.code);
@@ -464,13 +481,15 @@ useEffect(() => {
           }
         }
 
-        let msg = "Login failed. Please check credentials.";
+        let msg = "लॉगिन विफल। कृपया क्रेडेंशियल जांचें।";
         if (authErr.code === "auth/wrong-password" || authErr.code === "auth/invalid-credential") {
-          msg = "Incorrect username or password.";
+          msg = "उपयोगकर्ता नाम या पासवर्ड गलत है।";
         } else if (authErr.code === "auth/too-many-requests") {
-          msg = "Too many attempts. Try again later.";
+          msg = "बहुत सारे प्रयास। बाद में पुनः प्रयास करें।";
         } else if (authErr.code === "auth/user-not-found") {
-          msg = "Account not found.";
+          msg = "खाता नहीं मिला।";
+        } else if (authErr.code === "auth/invalid-email") {
+          msg = "अमान्य ईमेल प्रारूप।";
         }
         
         setLoginErrorMessage(msg);
@@ -633,7 +652,16 @@ useEffect(() => {
 
   const deleteUserRecord = async (docId: string) => {
     try {
-      await deleteDoc(doc(db, "users", docId));
+      const docSnap = await getDoc(doc(db, "users", docId));
+      if (docSnap.exists()) {
+        const uid = docSnap.data().uid;
+        const q = query(collection(db, "users"), where("uid", "==", uid));
+        const querySnapshot = await getDocs(q);
+        const deletePromises = querySnapshot.docs.map(d => deleteDoc(doc(db, "users", d.id)));
+        await Promise.all(deletePromises);
+      } else {
+        await deleteDoc(doc(db, "users", docId));
+      }
     } catch (err) {
       console.error("Delete user failed:", err);
       handleFirestoreError(err, OperationType.DELETE, `users/${docId}`);
@@ -756,12 +784,11 @@ useEffect(() => {
       if (userRole !== "admin" && currentUserDocId) {
         try {
           const userRef = doc(db, "users", currentUserDocId);
-          const newCreditVal = (userCredits || 0) - 1;
           await updateDoc(userRef, { 
-            credits: newCreditVal,
+            credits: increment(-1),
             updatedAt: serverTimestamp()
           });
-          setUserCredits(newCreditVal);
+          // Note: state will be updated by the onSnapshot listener
         } catch (creditErr) {
           console.error("Credit update failed:", creditErr);
           handleFirestoreError(creditErr, OperationType.UPDATE, `users/${currentUserDocId}`);
@@ -2683,7 +2710,7 @@ useEffect(() => {
                           };
                           if (modalMode === "credits") updateData.credits = parseInt(modalValue);
                           if (modalMode === "password") updateData.password = modalValue;
-                          if (modalMode === "addCredits") updateData.credits = (editingUser.credits || 0) + (parseInt(modalValue) || 0);
+                          if (modalMode === "addCredits") updateData.credits = increment(parseInt(modalValue) || 0);
 
                           await updateDoc(doc(db, "users", editingUser.id), updateData);
                         }
