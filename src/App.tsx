@@ -41,21 +41,20 @@ import {
 } from "lucide-react";
 import Markdown from "react-markdown";
 import { processHindiImage, OCRResult } from "./services/geminiService";
+import BirthRegistrationForm from "./components/BirthRegistrationForm";
 import { db, auth, googleProvider } from "./firebase";
 import { 
   collection, 
   query, 
   where, 
   getDocs, 
-  getDoc,
   addDoc, 
   deleteDoc, 
   doc, 
   serverTimestamp,
   onSnapshot,
   orderBy,
-  updateDoc,
-  increment
+  updateDoc
 } from "firebase/firestore";
 import firebaseConfig from "../firebase-applet-config.json";
 import { initializeApp, deleteApp } from "firebase/app";
@@ -171,7 +170,10 @@ export default function App() {
   const [regPass, setRegPass] = useState("");
   const [loginErrorMessage, setLoginErrorMessage] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<"ocr" | "users" | "history">("ocr");
+  const [activeTab, setActiveTab] = useState<"ocr" | "users" | "history" | "janam" | "ratings">("ocr");
+  const [ratingsList, setRatingsList] = useState<any[]>([]);
+  const [janamSubmissions, setJanamSubmissions] = useState<any[]>([]);
+  const [isJanamAdminView, setIsJanamAdminView] = useState(false);
   const [usersList, setUsersList] = useState<any[]>([]);
   const [newUsername, setNewUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -188,6 +190,35 @@ export default function App() {
   const [modalMode, setModalMode] = useState<"credits" | "password" | "addCredits" | "delete" | null>(null);
   const [modalValue, setModalValue] = useState("");
   const [isUpdatingUser, setIsUpdatingUser] = useState(false);
+
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [ratingValue, setRatingValue] = useState(0);
+  const [ratingFeedback, setRatingFeedback] = useState("");
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+
+  const handleRatingSubmit = async () => {
+    if (ratingValue === 0) return;
+    setIsSubmittingRating(true);
+    try {
+      if (!currentUser) return;
+      await addDoc(collection(db, "ratings"), {
+        userId: currentUser.uid,
+        userName: userName || currentUser.email || "Unknown User",
+        rating: ratingValue,
+        feedback: ratingFeedback,
+        createdAt: serverTimestamp()
+      });
+      setShowRatingModal(false);
+      setRatingValue(0);
+      setRatingFeedback("");
+      alert("Thank you for your rating!");
+    } catch (err) {
+      console.error(err);
+      alert("Error submitting rating: " + err);
+    } finally {
+      setIsSubmittingRating(false);
+    }
+  };
 
   const [image, setImage] = useState<string | null>(null);
   const [mimeType, setMimeType] = useState<string | null>(null);
@@ -217,14 +248,14 @@ export default function App() {
         try {
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
-            const latestDoc = querySnapshot.docs.reduce((prev, current) => {
-              const prevTime = prev.data().updatedAt?.toMillis ? prev.data().updatedAt.toMillis() : (prev.data().createdAt?.toMillis ? prev.data().createdAt.toMillis() : 0);
-              const currTime = current.data().updatedAt?.toMillis ? current.data().updatedAt.toMillis() : (current.data().createdAt?.toMillis ? current.data().createdAt.toMillis() : 0);
-              if (currTime === prevTime) {
-                  return (current.data().credits || 0) > (prev.data().credits || 0) ? current : prev;
-              }
-              return (currTime > prevTime) ? current : prev;
-            });
+        const latestDoc = querySnapshot.docs.reduce((prev, current) => {
+          const prevTime = prev.data().updatedAt?.toMillis ? prev.data().updatedAt.toMillis() : (prev.data().createdAt?.toMillis ? prev.data().createdAt.toMillis() : 0);
+          const currTime = current.data().updatedAt?.toMillis ? current.data().updatedAt.toMillis() : (current.data().createdAt?.toMillis ? current.data().createdAt.toMillis() : 0);
+          if (currTime === prevTime) {
+              return (current.data().credits || 0) > (prev.data().credits || 0) ? current : prev;
+          }
+          return (currTime > prevTime) ? current : prev;
+        });
             const userData = latestDoc.data();
             setUserRole(userData.role);
             setUserName(userData.username || "User");
@@ -249,11 +280,9 @@ export default function App() {
               setUserName("Super Admin");
               setUserCredits(9999);
               setCurrentUserDocId(docRef.id);
-            } else if (user.email !== "admin_v2026@hindiocr.pro" && user.email !== "admin@hindiocr.pro") {
-              // If Firestore record is missing and it's not a special admin, sign out
+            } else {
+              // Forced sign out if record missing
               await signOut(auth);
-              setIsAuthenticated(false);
-              setCurrentUser(null);
             }
           }
           
@@ -296,8 +325,8 @@ useEffect(() => {
         setUserStatus(userData.status || "active");
         setUserName(userData.username || "User");
         if (userData.role) setUserRole(userData.role);
-      } else if (currentUser && userRole !== "admin") {
-        // If doc disappears and user is not an admin, sign out
+      } else {
+        // Doc is missing, sign out
         signOut(auth);
       }
     });
@@ -305,6 +334,49 @@ useEffect(() => {
     return () => unsubscribeUser();
   }
 }, [currentUser]);
+
+  // Real-time Janam Submissions list for Admin/Users
+  useEffect(() => {
+    if (currentUser) {
+      const q = userRole === "admin" 
+        ? collection(db, "birth_registrations")
+        : query(collection(db, "birth_registrations"), where("userId", "==", currentUser.uid));
+      
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        let docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Client-side sort
+        docs.sort((a: any, b: any) => {
+           const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+           const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+           return tB - tA; // descending
+        });
+        setJanamSubmissions(docs);
+      }, (err) => {
+        console.error("Janam list error:", err);
+      });
+      return () => unsubscribe();
+    }
+  }, [currentUser, userRole]);
+
+  // Real-time Ratings list for Admin
+  useEffect(() => {
+    if (userRole === "admin") {
+      const q = collection(db, "ratings");
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        let docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Client-side sort descending by date
+        docs.sort((a: any, b: any) => {
+           const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+           const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+           return tB - tA;
+        });
+        setRatingsList(docs);
+      }, (err) => {
+        console.error("Ratings list error:", err);
+      });
+      return () => unsubscribe();
+    }
+  }, [userRole]);
 
   // Real-time scans list for history
   useEffect(() => {
@@ -417,7 +489,7 @@ useEffect(() => {
           
           if (userData.status === "locked" && loginMode !== "admin") {
             await signOut(auth);
-            setLoginErrorMessage("यह अकाउंट लॉक है। कृपया सहायता के लिए संपर्क करें।");
+            setLoginErrorMessage("This account is LOCKED. Please contact support.");
             setLoginError(true);
             setIsLoggingIn(false);
             return;
@@ -441,9 +513,9 @@ useEffect(() => {
             createdAt: serverTimestamp()
           });
         } else {
-          // For regular users, if doc is missing, they were likely deleted
+          // USER Login but document missing (likely deleted)
           await signOut(auth);
-          setLoginErrorMessage("Account not found or has been deleted.");
+          setLoginErrorMessage("Admin Contect kre");
           setLoginError(true);
           setIsLoggingIn(false);
           return;
@@ -481,15 +553,13 @@ useEffect(() => {
           }
         }
 
-        let msg = "लॉगिन विफल। कृपया क्रेडेंशियल जांचें।";
+        let msg = "Login failed. Please check credentials.";
         if (authErr.code === "auth/wrong-password" || authErr.code === "auth/invalid-credential") {
-          msg = "उपयोगकर्ता नाम या पासवर्ड गलत है।";
+          msg = "Incorrect username or password.";
         } else if (authErr.code === "auth/too-many-requests") {
-          msg = "बहुत सारे प्रयास। बाद में पुनः प्रयास करें।";
+          msg = "Too many attempts. Try again later.";
         } else if (authErr.code === "auth/user-not-found") {
-          msg = "खाता नहीं मिला।";
-        } else if (authErr.code === "auth/invalid-email") {
-          msg = "अमान्य ईमेल प्रारूप।";
+          msg = "Account not found.";
         }
         
         setLoginErrorMessage(msg);
@@ -652,16 +722,7 @@ useEffect(() => {
 
   const deleteUserRecord = async (docId: string) => {
     try {
-      const docSnap = await getDoc(doc(db, "users", docId));
-      if (docSnap.exists()) {
-        const uid = docSnap.data().uid;
-        const q = query(collection(db, "users"), where("uid", "==", uid));
-        const querySnapshot = await getDocs(q);
-        const deletePromises = querySnapshot.docs.map(d => deleteDoc(doc(db, "users", d.id)));
-        await Promise.all(deletePromises);
-      } else {
-        await deleteDoc(doc(db, "users", docId));
-      }
+      await deleteDoc(doc(db, "users", docId));
     } catch (err) {
       console.error("Delete user failed:", err);
       handleFirestoreError(err, OperationType.DELETE, `users/${docId}`);
@@ -784,11 +845,12 @@ useEffect(() => {
       if (userRole !== "admin" && currentUserDocId) {
         try {
           const userRef = doc(db, "users", currentUserDocId);
+          const newCreditVal = (userCredits || 0) - 1;
           await updateDoc(userRef, { 
-            credits: increment(-1),
+            credits: newCreditVal,
             updatedAt: serverTimestamp()
           });
-          // Note: state will be updated by the onSnapshot listener
+          setUserCredits(newCreditVal);
         } catch (creditErr) {
           console.error("Credit update failed:", creditErr);
           handleFirestoreError(creditErr, OperationType.UPDATE, `users/${currentUserDocId}`);
@@ -1066,7 +1128,13 @@ useEffect(() => {
                   </button>
                   <div className="flex items-center gap-3 px-6 py-4">
                     <Gift className="text-orange-500 w-5 h-5" />
-                    <span className="text-sm font-bold text-gray-900">New users get 3 FREE scans</span>
+                    <a 
+                      href="https://wa.me/916205710721?text=Namskar%20Sir%20Hmko%20Demo%20Chahiye%203%20Creadit." 
+                      target="_blank" 
+                      className="text-sm font-bold text-white bg-green-600 px-6 py-3 rounded-full hover:bg-green-700 hover:shadow-xl hover:shadow-green-500/30 hover:scale-105 transition-all duration-300"
+                    >
+                      Demo Contact
+                    </a>
                   </div>
                 </div>
               </motion.div>
@@ -1776,12 +1844,20 @@ useEffect(() => {
                   History
                 </button>
                 {userRole === "admin" && (
-                  <button 
-                    onClick={() => setActiveTab("users")}
-                    className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "users" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
-                  >
-                    Admin Panel
-                  </button>
+                  <>
+                    <button 
+                      onClick={() => setActiveTab("users")}
+                      className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "users" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
+                    >
+                      Admin Panel
+                    </button>
+                    <button 
+                      onClick={() => setActiveTab("ratings")}
+                      className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "ratings" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
+                    >
+                      Feedbacks
+                    </button>
+                  </>
                 )}
               </div>
               {image && activeTab === "ocr" && (
@@ -1796,6 +1872,13 @@ useEffect(() => {
                 </motion.button>
               )}
               <button 
+                onClick={() => setShowRatingModal(true)}
+                className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 transition-all shadow-sm border border-gray-100 mr-2"
+                title="Rate Us"
+              >
+                <Star className="w-5 h-5 fill-current" />
+              </button>
+              <button 
                 onClick={handleLogout}
                 className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm border border-gray-100"
               >
@@ -1805,8 +1888,26 @@ useEffect(() => {
           </div>
         </header>
 
+        {userCredits <= 5 && userRole !== "admin" && (
+          <div className="bg-red-50 z-10 relative border-b border-red-100 px-6 py-3 text-center flex items-center justify-center gap-2 animate-pulse">
+            <AlertCircle className="w-5 h-5 text-red-600" />
+            <span className="text-red-700 font-bold text-sm tracking-wide">
+              ⚠️ आपका क्रेडिट खत्म होने वाला है। अभी रिचार्ज करें।
+            </span>
+          </div>
+        )}
+
         <main className="relative z-10 max-w-7xl mx-auto px-6 py-16">
-          {activeTab === "history" ? (
+          {activeTab === "janam" ? (
+            <BirthRegistrationForm 
+              userId={currentUser?.uid} 
+              userRole={userRole} 
+              onSuccess={() => {}} 
+              submissions={janamSubmissions}
+              isAdminView={isJanamAdminView}
+              setIsAdminView={setIsJanamAdminView}
+            />
+          ) : activeTab === "history" ? (
             <div className="max-w-5xl mx-auto space-y-12">
               {historyError && (
                 <div className="p-8 bg-red-50 border border-red-100 rounded-[32px] space-y-4">
@@ -2166,6 +2267,49 @@ useEffect(() => {
                 </div>
               </div>
             </div>
+          ) : activeTab === "ratings" && userRole === "admin" ? (
+            <div className="max-w-6xl mx-auto space-y-12">
+              <div className="bg-white rounded-[40px] shadow-2xl border border-gray-100 overflow-hidden">
+                <div className="p-8 border-b border-gray-50 flex items-center justify-between">
+                  <h3 className="font-black text-xl tracking-tight text-gray-900">User Feedbacks & Ratings</h3>
+                  <span className="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">{ratingsList.length} Total</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50/50">
+                      <tr>
+                        <th className="px-8 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">User</th>
+                        <th className="px-8 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Rating</th>
+                        <th className="px-8 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Feedback</th>
+                        <th className="px-8 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {ratingsList.map((rating) => (
+                        <tr key={rating.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-8 py-4">
+                            <span className="font-black text-gray-900">{rating.userName}</span>
+                          </td>
+                          <td className="px-8 py-4">
+                            <div className="flex gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star key={star} className={`w-4 h-4 ${rating.rating >= star ? 'text-yellow-400 fill-current' : 'text-gray-200'}`} />
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-8 py-4">
+                            <p className="text-sm font-medium text-gray-600 max-w-sm truncate">{rating.feedback || "-"}</p>
+                          </td>
+                          <td className="px-8 py-4 text-xs font-bold text-gray-400">
+                            {rating.createdAt?.toDate().toLocaleDateString('en-IN')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           ) : !image ? (
             <>
                   <motion.div 
@@ -2174,22 +2318,14 @@ useEffect(() => {
                     transition={{ delay: 0.2 }}
                     className="max-w-4xl mx-auto text-center space-y-8"
                   >
-                    <motion.div 
-                      initial={{ scale: 0.9, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ delay: 0.2 }}
-                      className="inline-flex items-center gap-3 px-6 py-2.5 bg-white rounded-full shadow-xl shadow-gray-200/50 border border-gray-100 mb-6"
-                    >
-                      <span className="flex h-2.5 w-2.5 rounded-full bg-blue-600 animate-ping" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-600">Next-Gen Hindi OCR Engine</span>
-                    </motion.div>
-                    <h2 className="text-6xl md:text-8xl font-black text-gray-900 tracking-tighter leading-[0.95]">
-                      Best Image to <br />
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-orange-600">Text Hindi</span> Tool
-                    </h2>
-                    <p className="text-gray-500 text-2xl max-w-3xl mx-auto font-medium leading-relaxed tracking-tight">
-                      बस एक फोटो खींचें और हमारा AI उसे शुद्ध हिंदी और प्रोफेशनल सरकारी फॉर्मेट में बदल देगा। 
-                    </p>
+                    <div className="relative inline-block mt-4 mb-8">
+                      <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-orange-600 tracking-tighter leading-[0.95] absolute inset-0 blur-xl opacity-70 animate-pulse">
+                        Welcome Boss
+                      </h2>
+                      <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-orange-600 tracking-tighter leading-[0.95] relative">
+                        Welcome Boss
+                      </h2>
+                    </div>
                   </motion.div>
 
                   <motion.div 
@@ -2627,6 +2763,67 @@ useEffect(() => {
 
         {/* Edit User Modal */}
         <AnimatePresence>
+          {showRatingModal && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowRatingModal(false)}
+                className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="relative w-full max-w-sm bg-white rounded-[40px] shadow-2xl overflow-hidden"
+              >
+                <div className="p-8 pb-6 text-center">
+                  <h3 className="text-xl font-black text-gray-900 tracking-tight mb-2"> Rate Your Experience </h3>
+                  <p className="text-xs font-bold text-gray-500 mb-6">How do you like our OCR Tool?</p>
+                  
+                  <div className="flex justify-center gap-2 mb-6">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => setRatingValue(star)}
+                        className={`transition-colors ${ratingValue >= star ? 'text-yellow-400' : 'text-gray-200 hover:text-yellow-200'}`}
+                      >
+                        <Star className="w-10 h-10 fill-current" />
+                      </button>
+                    ))}
+                  </div>
+
+                  <textarea
+                    value={ratingFeedback}
+                    onChange={(e) => setRatingFeedback(e.target.value)}
+                    placeholder="Tell us more about your experience... (optional)"
+                    className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none resize-none h-24 mb-6"
+                  />
+
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => setShowRatingModal(false)}
+                      className="flex-1 px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-gray-400 hover:bg-gray-50 transition-all"
+                    >
+                      Skip
+                    </button>
+                    <button 
+                      disabled={ratingValue === 0 || isSubmittingRating}
+                      onClick={handleRatingSubmit}
+                      className="flex-[2] bg-blue-600 shadow-blue-600/20 text-white px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:opacity-90 shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                      {isSubmittingRating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit"}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Edit User Modal */}
+        <AnimatePresence>
           {editingUser && modalMode && (
             <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
               <motion.div 
@@ -2710,7 +2907,7 @@ useEffect(() => {
                           };
                           if (modalMode === "credits") updateData.credits = parseInt(modalValue);
                           if (modalMode === "password") updateData.password = modalValue;
-                          if (modalMode === "addCredits") updateData.credits = increment(parseInt(modalValue) || 0);
+                          if (modalMode === "addCredits") updateData.credits = (editingUser.credits || 0) + (parseInt(modalValue) || 0);
 
                           await updateDoc(doc(db, "users", editingUser.id), updateData);
                         }

@@ -76,5 +76,30 @@ service cloud.firestore {
       allow delete: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
       allow update: if false; // Scans are immutable history
     }
+
+    // Ratings collection
+    match /ratings/{ratingId} {
+      allow list, get: if isAdmin();
+      
+      function isValidRating(data) {
+        return data.userId is string &&
+               data.userName is string &&
+               data.rating is number &&
+               data.rating >= 1 && data.rating <= 5 &&
+               (!('feedback' in data) || data.feedback is string) &&
+               data.createdAt is timestamp;
+      }
+      
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid && isValidRating(request.resource.data);
+      allow update, delete: if false;
+    }
+
+    // Birth Registrations
+    match /birth_registrations/{registrationId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
   }
 }
