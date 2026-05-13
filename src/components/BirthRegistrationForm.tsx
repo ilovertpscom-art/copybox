@@ -258,15 +258,15 @@ export default function BirthRegistrationForm({
   );
 
   const PrintTemplate = ({ data, id }: { data: typeof formData, id?: string }) => (
-    <div id={id} className="bg-white w-[210mm] min-h-[297mm] mx-auto p-[15mm] text-gray-900 relative font-['Noto_Sans_Devanagari'] leading-[1.6] text-[15px]">
+    <div id={id} className="bg-white print:w-full print:h-full w-[210mm] min-h-[297mm] mx-auto p-[15mm] print:p-[10mm] text-gray-900 relative font-['Noto_Sans_Devanagari'] leading-[1.6] text-[15px] print:text-[14px] box-border">
         {/* Header Section */}
-        <div className="text-center mb-12 pt-8">
-            <h1 className="text-2xl font-black mb-1 tracking-tighter">जन्म के विलम्बित निबन्धन</h1>
-            <h2 className="text-4xl font-black underline underline-offset-8 decoration-2 tracking-[0.1em]">शपथ-पत्र</h2>
+        <div className="text-center mb-8 print:mb-6 pt-6 print:pt-4">
+            <h1 className="text-2xl print:text-xl font-black mb-1 tracking-tighter">जन्म के विलम्बित निबन्धन</h1>
+            <h2 className="text-4xl print:text-3xl font-black underline underline-offset-8 decoration-2 tracking-[0.1em]">शपथ-पत्र</h2>
         </div>
 
         {/* Form Body */}
-        <div className="space-y-6">
+        <div className="space-y-5 print:space-y-4">
             <p className="text-justify indent-12">
                 <strong className="font-black text-black">मैं</strong> <strong className="font-black text-black">{data.applicantName || "...................................."}</strong> पिता/पति <strong className="font-black text-black">{data.fatherHusbandName || "...................................."}</strong> ग्राम/मुहल्ला <strong className="font-black text-black">{data.applicantVillage || "...................................."}</strong> पो. <strong className="font-black text-black">{data.applicantPost || "...................................."}</strong> थाना <strong className="font-black text-black">{data.applicantThana || "...................................."}</strong> जिला <strong className="font-black text-black">{data.applicantZilla || "...................................."}</strong> राज्य <strong className="font-black text-black">{data.applicantState || "बिहार"}</strong> का स्थायी निवासी हूँ एवं वर्तमान में मैं ग्राम/मुहल्ला <strong className="font-black text-black">{data.currentVillage || "...................................."}</strong> वार्ड नं. <strong className="font-black text-black">{data.currentWard || "................"}</strong> पो. <strong className="font-black text-black">{data.currentPost || "...................................."}</strong> थाना <strong className="font-black text-black">{data.currentThana || "...................................."}</strong> जिला <strong className="font-black text-black">{data.currentZilla || "...................................."}</strong> राज्य <strong className="font-black text-black">{data.currentState || "बिहार"}</strong> में रह रहा/रही हूँ।
             </p>
@@ -309,33 +309,33 @@ export default function BirthRegistrationForm({
                 </div>
             </div>
 
-            <div className="pt-10 flex flex-col items-end pr-10">
+            <div className="pt-8 print:pt-6 flex flex-col items-end pr-10">
                 <div className="w-72 border-b-2 border-gray-900 mb-2"></div>
-                <p className="text-[17px] pr-10 font-bold">शपथकर्ता का हस्ताक्षर</p>
+                <p className="text-[17px] print:text-[15px] pr-10 font-bold">शपथकर्ता का हस्ताक्षर</p>
             </div>
 
-            <div className="pt-10">
-                <p className="text-justify leading-[2] text-[16px]">
+            <div className="pt-8 print:pt-6">
+                <p className="text-justify leading-[2] text-[16px] print:text-[14.5px]">
                     <strong className="font-black text-black">मैं</strong> <strong className="font-black text-black mx-1">{data.applicantName || "...................................."}</strong> पिता/पति <strong className="font-black text-black mx-1">{data.fatherHusbandName || "...................................."}</strong> शपथपूर्वक एकरार करता/करती हूँ कि शपथ-पत्र में दी गयी सभी सूचना मेरी जानकारी एवं विश्वास में सही एवं सत्य है एवं कोई भी अंश छुपाया नहीं गया है।
                 </p>
             </div>
 
-            <div className="flex justify-end mt-16 pr-10">
+            <div className="flex justify-end mt-12 print:mt-8 pr-10">
                 <div className="text-center">
                     <div className="w-80 border-b-2 border-gray-900 mb-3"></div>
-                    <p className="text-[17px] font-bold">शपथकर्ता का हस्ताक्षर / अंगूठे का निशान</p>
+                    <p className="text-[17px] print:text-[15px] font-bold">शपथकर्ता का हस्ताक्षर / अंगूठे का निशान</p>
                 </div>
             </div>
 
-            <div className="mt-16 border-t-2 border-gray-200 pt-6 space-y-4">
-                <p className="text-justify italic leading-relaxed text-[15px]">
+            <div className="mt-12 print:mt-8 border-t-2 border-gray-200 pt-6 print:pt-4 space-y-4 print:space-y-3">
+                <p className="text-justify italic leading-relaxed text-[15px] print:text-[14px]">
                     प्रमाणित किया जाता है कि शपथकर्ता ने उक्त शपथ-पत्र का कुल मजमून मेरे समक्ष सही एवं सत्य होना स्वीकार किया है और जिसका पहचान श्री <strong className="font-black text-black">{data.advocateName || "................................"}</strong> अधिवक्ता, सिवान ने किया है।
                 </p>
 
                 
-                <div className="flex justify-between items-start pt-12">
-                    <div className="pl-4 mt-32">
-                        <p className="text-[19px]">तिथि ........................</p>
+                <div className="flex justify-between items-start pt-10 print:pt-6">
+                    <div className="pl-4 mt-24 print:mt-16">
+                        <p className="text-[19px] print:text-[16px]">तिथि ........................</p>
                     </div>
 
                     <div className="relative pr-12">
@@ -411,14 +411,13 @@ export default function BirthRegistrationForm({
           </div>
       </div>
 
+      <div id="print-area-wrapper" className="hidden" aria-hidden="true">
+          <PrintTemplate data={formData} id="print-area" />
+      </div>
+
       <div className="max-w-7xl mx-auto p-8 flex gap-8 no-print pb-32">
           {/* Main Area */}
           <div className="flex-1">
-              {/* Always render print template in a hidden container for PDF generation/print */}
-              <div id="print-area-wrapper" className="hidden" aria-hidden="true">
-                  <PrintTemplate data={formData} id="print-area" />
-              </div>
-
               {activeTab === "fill" && (
                   <div className="bg-white rounded-[40px] shadow-2xl border border-gray-100 overflow-hidden">
                       <div className="p-10 border-b border-gray-50 flex items-center justify-between">
