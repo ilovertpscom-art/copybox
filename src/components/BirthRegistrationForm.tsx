@@ -232,12 +232,14 @@ export default function BirthRegistrationForm({
       flushSync(() => {
           setFormData({ ...sub });
       });
-      try {
-          window.focus();
-          window.print();
-      } catch (err) {
-          console.error("Print failed:", err);
-      }
+      setTimeout(() => {
+          try {
+              window.focus();
+              window.print();
+          } catch (err) {
+              console.error("Print failed:", err);
+          }
+      }, 500);
   };
 
   const handleGlobalPrint = () => {
@@ -567,8 +569,17 @@ export default function BirthRegistrationForm({
                               </button>
                               <button 
                                 onClick={() => {
-                                  setActiveTab("preview");
-                                  setShouldPrint(true);
+                                  flushSync(() => {
+                                    setActiveTab("preview");
+                                  });
+                                  setTimeout(() => {
+                                      try {
+                                          window.focus();
+                                          window.print();
+                                      } catch (err) {
+                                          console.error("Print failed:", err);
+                                      }
+                                  }, 500);
                                 }}
                                 className="flex-1 bg-gray-50 text-gray-900 border border-gray-100 py-5 rounded-2xl text-[13px] font-black uppercase tracking-widest hover:bg-white transition-all flex items-center justify-center gap-3"
                               >
