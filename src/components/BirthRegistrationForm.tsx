@@ -258,15 +258,15 @@ export default function BirthRegistrationForm({
   );
 
   const PrintTemplate = ({ data, id }: { data: typeof formData, id?: string }) => (
-    <div id={id} className="bg-white print:w-full print:h-full w-[210mm] min-h-[297mm] mx-auto p-[15mm] print:p-[10mm] text-gray-900 relative font-['Noto_Sans_Devanagari'] leading-[1.6] text-[15px] print:text-[14px] box-border">
+    <div id={id} className="bg-white print:w-full print:h-auto print:min-h-0 w-[210mm] min-h-[297mm] mx-auto p-[15mm] print:p-[5mm] text-gray-900 relative font-['Noto_Sans_Devanagari'] leading-[1.6] print:leading-[1.5] text-[15px] print:text-[14px] box-border">
         {/* Header Section */}
-        <div className="text-center mb-8 print:mb-6 pt-6 print:pt-4">
+        <div className="text-center mb-8 print:mb-4 pt-6 print:pt-2">
             <h1 className="text-2xl print:text-xl font-black mb-1 tracking-tighter">जन्म के विलम्बित निबन्धन</h1>
             <h2 className="text-4xl print:text-3xl font-black underline underline-offset-8 decoration-2 tracking-[0.1em]">शपथ-पत्र</h2>
         </div>
 
         {/* Form Body */}
-        <div className="space-y-5 print:space-y-4">
+        <div className="space-y-5 print:space-y-3">
             <p className="text-justify indent-12">
                 <strong className="font-black text-black">मैं</strong> <strong className="font-black text-black">{data.applicantName || "...................................."}</strong> पिता/पति <strong className="font-black text-black">{data.fatherHusbandName || "...................................."}</strong> ग्राम/मुहल्ला <strong className="font-black text-black">{data.applicantVillage || "...................................."}</strong> पो. <strong className="font-black text-black">{data.applicantPost || "...................................."}</strong> थाना <strong className="font-black text-black">{data.applicantThana || "...................................."}</strong> जिला <strong className="font-black text-black">{data.applicantZilla || "...................................."}</strong> राज्य <strong className="font-black text-black">{data.applicantState || "बिहार"}</strong> का स्थायी निवासी हूँ एवं वर्तमान में मैं ग्राम/मुहल्ला <strong className="font-black text-black">{data.currentVillage || "...................................."}</strong> वार्ड नं. <strong className="font-black text-black">{data.currentWard || "................"}</strong> पो. <strong className="font-black text-black">{data.currentPost || "...................................."}</strong> थाना <strong className="font-black text-black">{data.currentThana || "...................................."}</strong> जिला <strong className="font-black text-black">{data.currentZilla || "...................................."}</strong> राज्य <strong className="font-black text-black">{data.currentState || "बिहार"}</strong> में रह रहा/रही हूँ।
             </p>
@@ -309,49 +309,49 @@ export default function BirthRegistrationForm({
                 </div>
             </div>
 
-            <div className="pt-8 print:pt-6 flex flex-col items-end pr-10">
-                <div className="w-72 border-b-2 border-gray-900 mb-2"></div>
-                <p className="text-[17px] print:text-[15px] pr-10 font-bold">शपथकर्ता का हस्ताक्षर</p>
+            <div className="pt-8 print:pt-4 flex flex-col items-end pr-10">
+                <div className="w-72 print:w-64 border-b-2 border-gray-900 mb-2"></div>
+                <p className="text-[17px] print:text-[14px] pr-10 font-bold">शपथकर्ता का हस्ताक्षर</p>
             </div>
 
-            <div className="pt-8 print:pt-6">
-                <p className="text-justify leading-[2] text-[16px] print:text-[14.5px]">
+            <div className="pt-8 print:pt-4">
+                <p className="text-justify leading-[2] print:leading-[1.6] text-[16px] print:text-[14px]">
                     <strong className="font-black text-black">मैं</strong> <strong className="font-black text-black mx-1">{data.applicantName || "...................................."}</strong> पिता/पति <strong className="font-black text-black mx-1">{data.fatherHusbandName || "...................................."}</strong> शपथपूर्वक एकरार करता/करती हूँ कि शपथ-पत्र में दी गयी सभी सूचना मेरी जानकारी एवं विश्वास में सही एवं सत्य है एवं कोई भी अंश छुपाया नहीं गया है।
                 </p>
             </div>
 
-            <div className="flex justify-end mt-12 print:mt-8 pr-10">
+            <div className="flex justify-end mt-12 print:mt-6 pr-10">
                 <div className="text-center">
-                    <div className="w-80 border-b-2 border-gray-900 mb-3"></div>
-                    <p className="text-[17px] print:text-[15px] font-bold">शपथकर्ता का हस्ताक्षर / अंगूठे का निशान</p>
+                    <div className="w-80 print:w-72 border-b-2 border-gray-900 mb-3 print:mb-2"></div>
+                    <p className="text-[17px] print:text-[14px] font-bold">शपथकर्ता का हस्ताक्षर / अंगूठे का निशान</p>
                 </div>
             </div>
 
-            <div className="mt-12 print:mt-8 border-t-2 border-gray-200 pt-6 print:pt-4 space-y-4 print:space-y-3">
-                <p className="text-justify italic leading-relaxed text-[15px] print:text-[14px]">
+            <div className="mt-12 print:mt-6 border-t-2 border-gray-200 pt-6 print:pt-4 space-y-4 print:space-y-2">
+                <p className="text-justify italic leading-relaxed text-[15px] print:text-[13px]">
                     प्रमाणित किया जाता है कि शपथकर्ता ने उक्त शपथ-पत्र का कुल मजमून मेरे समक्ष सही एवं सत्य होना स्वीकार किया है और जिसका पहचान श्री <strong className="font-black text-black">{data.advocateName || "................................"}</strong> अधिवक्ता, सिवान ने किया है।
                 </p>
 
                 
-                <div className="flex justify-between items-start pt-10 print:pt-6">
-                    <div className="pl-4 mt-24 print:mt-16">
-                        <p className="text-[19px] print:text-[16px]">तिथि ........................</p>
+                <div className="flex justify-between items-start pt-10 print:pt-4">
+                    <div className="pl-4 mt-24 print:mt-8">
+                        <p className="text-[19px] print:text-[15px] font-bold">तिथि ........................</p>
                     </div>
 
                     <div className="relative pr-12">
-                        <div className="space-y-4 text-[16px] text-left min-w-[300px]">
-                            <p className="text-center text-xl mb-4">लेख्य प्रमाणक</p>
-                            <div className="space-y-2">
-                                <p>पूरा नाम <strong>............................................</strong></p>
+                        <div className="space-y-4 print:space-y-2 text-[16px] print:text-[14px] text-left min-w-[300px]">
+                            <p className="text-center text-xl print:text-lg mb-4 print:mb-2 font-bold">लेख्य प्रमाणक</p>
+                            <div className="space-y-2 print:space-y-1">
+                                <p>पूरा नाम <strong className="ml-2">............................................</strong></p>
                             </div>
-                            <div className="space-y-2">
-                                <p>रजिस्ट्रेशन <strong>........................................</strong></p>
+                            <div className="space-y-2 print:space-y-1">
+                                <p>रजिस्ट्रेशन <strong className="ml-2">........................................</strong></p>
                             </div>
-                            <div className="space-y-2">
-                                <p>रजिस्ट्रेशन का वर्ष - <strong>.......................</strong></p>
+                            <div className="space-y-2 print:space-y-1">
+                                <p>रजिस्ट्रेशन का वर्ष - <strong className="ml-2">.......................</strong></p>
                             </div>
-                            <div className="space-y-2">
-                                <p>स्थान - <strong>...................................</strong></p>
+                            <div className="space-y-2 print:space-y-1">
+                                <p>स्थान - <strong className="ml-2">...................................</strong></p>
                             </div>
                         </div>
                         
