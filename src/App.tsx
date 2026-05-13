@@ -1181,178 +1181,44 @@ useEffect(() => {
             </div>
           </section>
 
-          {/* SEO Content Section: Features, Benefits, FAQ */}
-          <section className="py-24 px-6 bg-gray-50 border-y border-gray-100">
-            <div className="max-w-7xl mx-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-20">
-                <div className="lg:col-span-2 space-y-12">
-                   {/* Blog Preview Section */}
-                   <div id="blog" className="space-y-10 mb-20 bg-white p-12 rounded-[50px] border border-gray-100 shadow-xl">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-50 text-orange-600 rounded-full text-[10px] font-black uppercase tracking-widest">
-                      <Star className="w-3 h-3" /> Featured Article
-                    </div>
-                    <h2 className="text-4xl font-black text-gray-900 tracking-tighter leading-none italic">
-                      Best Free <span className="text-blue-600">Hindi OCR Tools</span> Online (2026)
-                    </h2>
-                    <p className="text-gray-500 font-medium leading-relaxed">
-                      Are you looking for the best way to convert Hindi images to text for free? In 2026, the landscape of Optical Character Recognition (OCR) has shifted towards AI-driven models. While tools like Tesseract and Google Lens have been staples, a new generation of Devanagari-specialized engines has emerged. 
-                    </p>
-                    <div className="space-y-8 mt-12 border-t border-gray-50 pt-10">
-                      <div className="space-y-4">
-                        <h3 className="text-xl font-bold text-gray-900">1. ScanHindi.com (Our Recommendation)</h3>
-                        <p className="text-gray-600 leading-relaxed">
-                          ScanHindi.com remains the top choice for 2026 due to its specialized focus on Indian regional handwriting. Unlike global tools, it is optimized for Devanagari ligatures and the complex Shirorekha structure. It offers 3 free scans for new users and is the fastest tool in the market.
-                        </p>
-                        <ul className="list-disc pl-6 text-sm text-gray-500 space-y-2">
-                          <li>99.9% Devanagari Accuracy</li>
-                          <li>Handwriting Compatible</li>
-                          <li>Mobile Ready PWA interface</li>
-                        </ul>
-                      </div>
-                      <div className="space-y-4 pt-6 border-t border-gray-50">
-                        <h3 className="text-xl font-bold text-gray-900">2. Google Lens</h3>
-                        <p className="text-gray-600 leading-relaxed">
-                          Google Lens is a great general-purpose tool. While it is excellent for printed text, it often struggles with stylized or cursive Hindi handwriting. It is free and built into most Android phones, making it very accessible.
-                        </p>
-                      </div>
-                      <div className="space-y-4 pt-6 border-t border-gray-50">
-                        <h3 className="text-xl font-bold text-gray-900">3. OnlineOCR.net</h3>
-                        <p className="text-gray-600 leading-relaxed">
-                          A classic tool that supports Devanagari. It is good for basic PDF documents but lacks the deep-learning capabilities required for photographic image processing. It often requires heavy manual editing after conversion.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="bg-blue-600 p-8 rounded-[30px] flex flex-col md:flex-row items-center justify-between gap-6 text-white mt-12">
-                      <div className="space-y-1">
-                        <p className="text-xs font-black uppercase tracking-widest opacity-70">Winner for 2026</p>
-                        <p className="text-xl font-black italic">ScanHindi.com - Try it free today</p>
-                      </div>
-                      <button onClick={() => setShowLoginPage(true)} className="px-8 py-4 bg-white text-blue-600 font-black uppercase text-xs rounded-2xl hover:bg-gray-100 transition-all shadow-xl shadow-black/10">Start Scanning</button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    <h2 className="text-4xl font-black tracking-tight text-gray-900 uppercase">
-                      Why ScanHindi.com is the Best <span className="text-blue-600">Hindi OCR</span> Tool?
-                    </h2>
-                    <p className="text-xl text-gray-600 leading-relaxed font-medium">
-                      India generates millions of handwritten documents every day. From government forms to student notes, the need for an accurate <strong>Image to Text Hindi</strong> converter has never been higher. ScanHindi provides a seamless digital experience for Devanagari script extraction.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {[
-                      {
-                        title: "Handwriting OCR Hindi",
-                        desc: "Our model is specialized in complex cursive and scribbled Hindi handwriting analysis."
-                      },
-                      {
-                        title: "Document Digitization",
-                        desc: "Convert physical archives, old government records, and archives into searchable Word/PDF format."
-                      },
-                      {
-                        title: "Multi-Format Support",
-                        desc: "Upload JPG, PNG, or scanned PDFs. Our engine handles resolution scaling automatically."
-                      },
-                      {
-                        title: "India-Specific AI",
-                        desc: "Optimized for Hinglish and pure Hindi vocabulary commonly used in Indian administration."
-                      }
-                    ].map((feature, idx) => (
-                      <div key={idx} className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                        <h3 className="text-lg font-black text-gray-900 mb-3 uppercase tracking-tight">{feature.title}</h3>
-                        <p className="text-gray-500 font-medium leading-relaxed">{feature.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* FAQ Section */}
-                  <div id="faq" className="pt-12 space-y-8">
-                    <h2 className="text-3xl font-black tracking-tight text-gray-900 uppercase">Frequently Asked Questions (FAQ)</h2>
-                    <div className="space-y-6">
-                      {[
-                        {
-                          q: "क्या यह Hindi OCR टूल बिल्कुल फ्री है?",
-                          a: "जी हाँ, ScanHindi.com पर आप शुरूआती स्कैन बिल्कुल फ्री में कर सकते हैं। अधिक उपयोग के लिए हम बहुत ही सस्ते क्रेडिट्स प्रदान करते हैं।"
-                        },
-                        {
-                          q: "Photo se text copy kaise kare in Hindi?",
-                          a: "बस अपनी फोटो को यहाँ अपलोड करें, हमारा AI उसे प्रोसेस करेगा और फिर आप टेक्स्ट को एक क्लिक में कॉपी कर सकते हैं।"
-                        },
-                        {
-                          q: "Can this tool extract text from low-quality images?",
-                          a: "Yes, our advanced AI uses image normalization to enhance blurry or low-light photos before performing OCR for better results."
-                        },
-                        {
-                          q: "Is my data safe on ScanHindi.com?",
-                          a: "Absolutely. We don't store your personal documents. All images are processed securely and deleted after extraction."
-                        }
-                      ].map((faq, idx) => (
-                        <div key={idx} className="border-b border-gray-200 pb-6">
-                          <h3 className="text-lg font-black text-gray-900 mb-2">{faq.q}</h3>
-                          <p className="text-gray-600 font-medium">{faq.a}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-10">
-                  <div className="bg-black text-white p-10 rounded-[40px] shadow-2xl space-y-6">
-                    <h3 className="text-2xl font-black uppercase tracking-tight italic">SEO Highlights</h3>
-                    <ul className="space-y-4">
-                      {["99.9% Devanagari Accuracy", "Fastest Image to Text India", "Secure Private Backend", "Handwriting Compatible"].map(item => (
-                        <li key={item} className="flex items-center gap-3">
-                          <CheckCircle2 className="w-5 h-5 text-blue-400 shrink-0" />
-                          <span className="text-xs font-black uppercase tracking-widest">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <hr className="border-white/10" />
-                    <p className="text-gray-400 text-sm font-medium leading-relaxed">
-                      Optimized for <br/><strong>Scan Hindi Documents Online</strong> & <strong>Hindi Typing from Image</strong>.
-                    </p>
-                  </div>
-
-                  <div className="bg-blue-600 text-white p-10 rounded-[40px] shadow-2xl relative overflow-hidden group">
-                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-                    <Star className="w-10 h-10 mb-6" />
-                    <h3 className="text-2xl font-black uppercase tracking-tight">Trust Score</h3>
-                    <p className="text-6xl font-black tracking-tighter mt-4 italic">9.8/10</p>
-                    <p className="text-blue-100 text-[10px] font-black uppercase tracking-widest mt-6">Based on 10k+ Scans</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
           {/* Features Section */}
-          <section id="features" className="py-32 px-6">
-            <div className="max-w-7xl mx-auto space-y-20">
-              <div className="text-center space-y-4">
-                <h2 className="text-sm font-black uppercase tracking-[0.4em] text-blue-600">Why Choose Us?</h2>
-                <h3 className="text-5xl font-black tracking-tighter text-gray-900 italic">Advanced Technology. Simple Interface.</h3>
+          <section id="features" className="py-24 px-6 bg-gray-50/50">
+            <div className="max-w-7xl mx-auto space-y-16">
+              <div className="text-center space-y-4 max-w-3xl mx-auto">
+                <motion.span 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  className="inline-block px-4 py-1.5 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-[0.3em] rounded-full"
+                >
+                  Premium Features
+                </motion.span>
+                <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-gray-900 italic">
+                  Advanced Technology. <span className="text-blue-600">Zero Effort.</span>
+                </h2>
+                <p className="text-gray-500 font-medium text-lg leading-relaxed">
+                  Our proprietary neural engine is trained on millions of Hindi handwritten samples, ensuring the highest accuracy even for complex dialects and styles.
+                </p>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {[
-                  { icon: Zap, title: "Instant Speed", desc: "Extract text from images in under 2 seconds. Powered by Gemini Pro Vision.", color: "blue" },
-                  { icon: Shield, title: "100% Secure", desc: "Your documents are processed with end-to-end encryption. Privacy is our priority.", color: "green" },
-                  { icon: FileText, title: "Hindi Optimized", desc: "Specially tuned for Devanagari script, even with complex handwriting styles.", color: "orange" }
+                  { icon: Zap, title: "Instant OCR", desc: "Extract text from photos in under 3 seconds using Google Gemini AI technology.", color: "blue" },
+                  { icon: Shield, title: "Safe & Private", desc: "Your data is yours. We use bank-grade encryption to process your documents securely.", color: "green" },
+                  { icon: CheckCircle2, title: "High Accuracy", desc: "99.9% accuracy for clear handwritten notes and typed government documents.", color: "orange" }
                 ].map((feat, i) => (
                   <motion.div 
                     key={i}
-                    initial={{ opacity: 0, y: 30 }}
+                    initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.1 }}
-                    className="p-12 rounded-[40px] border border-gray-50 bg-white hover:shadow-2xl hover:shadow-gray-200/50 transition-all group"
+                    className="p-10 rounded-[32px] bg-white border border-gray-100 hover:shadow-xl hover:-translate-y-2 transition-all group"
                   >
-                    <div className={`w-16 h-16 rounded-2xl bg-${feat.color}-50 flex items-center justify-center text-${feat.color} font-black mb-8 group-hover:scale-110 transition-transform`}>
-                      <feat.icon className="w-8 h-8" />
+                    <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-900 mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                      <feat.icon className="w-7 h-7" />
                     </div>
-                    <h4 className="text-2xl font-black text-gray-900 tracking-tight mb-4 italic">{feat.title}</h4>
-                    <p className="text-gray-500 leading-relaxed font-medium">
+                    <h4 className="text-2xl font-black text-gray-900 tracking-tight mb-3 italic">{feat.title}</h4>
+                    <p className="text-gray-500 leading-relaxed font-medium text-sm">
                       {feat.desc}
                     </p>
                   </motion.div>
@@ -1361,269 +1227,138 @@ useEffect(() => {
             </div>
           </section>
 
-          {/* Hindi Image to Text Converter Landing Page Content */}
-          <section className="py-24 px-6 bg-white border-t border-gray-100">
-            <div className="max-w-5xl mx-auto prose prose-slate prose-blue lg:prose-xl">
-              <h1 className="text-5xl font-black tracking-tighter text-gray-900 border-b-8 border-blue-600 inline-block pb-2 mb-12">
-                Hindi Image to Text Converter: Digitizing India's Handwriting
-              </h1>
+          {/* How It Works Section */}
+          <section id="how-it-works" className="py-24 px-6 overflow-hidden">
+             <div className="max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                    <div className="space-y-12">
+                        <div className="space-y-4">
+                            <h2 className="text-5xl font-black tracking-tighter text-gray-900 italic">How It Works</h2>
+                            <p className="text-gray-500 text-lg font-medium leading-relaxed">
+                                Get your digital text in three simple steps. No technical knowledge required.
+                            </p>
+                        </div>
 
-              <div className="space-y-12 text-gray-700 leading-relaxed font-medium">
-                <section>
-                  <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">Introduction: The Power of Hindi OCR Online</h2>
-                  <p>
-                    In the digital age, typing manually from images of Hindi documents is a thing of the past. Whether you are a student trying to digitize handwritten notes or a government official dealing with massive physical records, a reliable <strong>Hindi Image to Text Converter</strong> is essential. ScanHindi.com is designed to bridge the gap between physical paper and digital data using cutting-edge AI.
-                  </p>
-                  <p>
-                    Traditional OCR (Optical Character Recognition) often fails when it comes to the complex ligatures and half-characters of the Devanagari script. Characters like "क्ष", "त्र", and "ज्ञ" or half-characters in words like "प्रविष्टि" require more than just pattern matching—they require a semantic understanding of the language. Our tool, powered by the latest Gemini AI, treats the image not just as a grid of pixels, but as a contextual document. This ensures that even the most difficult handwriting is converted with near-perfect accuracy, preserving the flow and meaning of your original text.
-                  </p>
-                  <p>
-                    As India pushes towards a "Digital India," the digitization of Hindi content becomes a cornerstone of accessible administration. ScanHindi.com is proud to contribute to this mission by providing a tool that is not only high-performing but also extremely user-friendly for non-technical users.
-                  </p>
-                </section>
-
-                <section>
-                   <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">Why Choose ScanHindi for Image to Text Hindi?</h2>
-                   <p>
-                     Most online tools use generic models that struggle with the nuances of Devanagari. They often produce "gibberish" or misindentified characters when faced with cursive handwriting or low-contrast scans. ScanHindi.com offers a localized, India-centric approach. Here is why we rank as the <strong>best Hindi OCR tool</strong>:
-                   </p>
-                   <ul className="list-disc pl-6 space-y-4">
-                     <li><strong>Unmatched Accuracy:</strong> We achieve up to 99.9% accuracy for scanned documents. Our AI recognizes the difference between similar-looking characters like "ट" and "ठ" or "य" and "थ" even in fast handwriting.</li>
-                     <li><strong>Handwriting Recognition:</strong> Unlike standard OCR software (Tesseract, etc.), our deep-learning models can understand complex cursive Hindi and varying handwriting styles from diverse regions of India.</li>
-                     <li><strong>Semantic Correction:</strong> Our AI doesn't just see shapes; it understands Hindi grammar. If a character is slightly blurry, it uses the surrounding context to predict the most likely word, significantly reducing manual correction time.</li>
-                     <li><strong>Speed & Efficiency:</strong> Time is money. Our <strong>Image to Text Hindi</strong> engine processes complex images in less than 2 seconds, allowing you to digitize hundreds of pages in a single afternoon.</li>
-                     <li><strong>Secure & Private:</strong> We understand that many Hindi documents (like land records or personal letters) are sensitive. We use enterprise-grade encryption for all data transfers and have a strict "no-retention" policy for guest scans.</li>
-                   </ul>
-                </section>
-
-                <section>
-                  <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">In-Depth: The Technology Behind Devanagari Extraction</h2>
-                  <p>
-                    Extracting text from Devanagari script is significantly harder than Latin scripts. The "Shirorekha" (the horizontal line on top of words) often connects several characters, making individual character segmentation a nightmare for old-school OCR systems. Furthermore, vowels (Matras) can appear above, below, before, or after the main consonant.
-                  </p>
-                  <p>
-                    ScanHindi.com utilizes Large Multimodal Models (LMMs). Instead of looking for individual characters, these models look at "tokens" and "features" across the entire line. This holistic approach allows the system to identify the word "भारतीय" even if the top line is broken or a Matra is slightly shifted. This is what sets a premium <strong>Hindi Image to Text Converter</strong> apart from the rest.
-                  </p>
-                  <p>
-                    We also employ "Image Normalization" techniques. When you upload a photo, our system automatically adjusts the contrast, sharpness, and brightness to simulate a high-quality scanner. This prep-work is crucial for photographs taken under low-light conditions or with phone cameras.
-                  </p>
-                </section>
-
-                <section className="bg-blue-50/50 p-10 rounded-[40px] border border-blue-100 italic">
-                  <h3 className="text-2xl font-black text-blue-900 mb-4 uppercase">Detailed Guide: How to convert Hindi images to text?</h3>
-                  <p className="text-blue-700 mb-4 font-bold">Follow these four simple steps to digitize your documents today:</p>
-                  <ol className="list-decimal pl-6 space-y-4 text-blue-800">
-                    <li><strong>Upload:</strong> Click the "User Login" button on our homepage. You can drag and drop your files or select them from your device. We support JPG, PNG, and PDF formats.</li>
-                    <li><strong>Crop & Align:</strong> Use our built-in cropping tool to select only the text area. This helps the AI focus its "attention" and improves accuracy by removing unnecessary background noise.</li>
-                    <li><strong>AI Scanning:</strong> Click the "Scan" button. You will see a blue scanning animation move across your document. This is where our AI is performing the heavy lifting of Devanagari character recognition.</li>
-                    <li><strong>Review & Export:</strong> Within seconds, your text appears in an editable markdown box. You can copy it, edit it, or download it for your records.</li>
-                  </ol>
-                </section>
-
-                <section>
-                  <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">The Digital Transformation of Indian Documentation</h2>
-                  <p>
-                    The use cases for <strong>Devanagari Text Extraction</strong> are vast and impact every sector of Indian society. Here are some detailed scenarios where ScanHindi.com is making a difference:
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-10 font-bold">
-                    <div className="p-8 bg-gray-50 rounded-[40px] border border-gray-100 shadow-sm">
-                      <h4 className="text-blue-600 mb-4 uppercase tracking-tighter">Legal & Judiciary</h4>
-                      <p className="text-sm font-medium text-gray-600">Many legal cases in local courts rely on handwritten affidavits and old stamp papers. Digitizing these documents makes them searchable and helps lawyers build stronger cases faster.</p>
+                        <div className="space-y-8">
+                            {[
+                                { step: "01", title: "Upload Image", desc: "Select or drag and drop your handwritten document or form photo." },
+                                { step: "02", title: "AI Processing", desc: "Our advanced AI engine analyzes the Devanagari script and layouts." },
+                                { step: "03", title: "Copy & Edit", desc: "Get your clean, digital Hindi text ready to be pasted or edited." }
+                            ].map((item, idx) => (
+                                <motion.div 
+                                    initial={{ opacity: 0, x: -20 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.1 }}
+                                    key={idx} 
+                                    className="flex gap-6 items-start"
+                                >
+                                    <div className="text-4xl font-black text-gray-100 italic leading-none">{item.step}</div>
+                                    <div className="space-y-2">
+                                        <h4 className="text-xl font-black text-gray-900 italic">{item.title}</h4>
+                                        <p className="text-gray-500 text-sm font-medium leading-relaxed">{item.desc}</p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
                     </div>
-                    <div className="p-8 bg-gray-50 rounded-[40px] border border-gray-100 shadow-sm">
-                      <h4 className="text-purple-600 mb-4 uppercase tracking-tighter">Government Administration</h4>
-                      <p className="text-sm font-medium text-gray-600">From RTI responses to Panchayat records, the amount of Hindi paperwork is staggering. Our tool helps clerks and administrators move towards paperless workflows with ease.</p>
-                    </div>
-                    <div className="p-8 bg-gray-50 rounded-[40px] border border-gray-100 shadow-sm">
-                      <h4 className="text-orange-600 mb-4 uppercase tracking-tighter">Education & Research</h4>
-                      <p className="text-sm font-medium text-gray-600">PhD scholars scanning old manuscripts or students converting their classmate's Hindi notes can save hundreds of hours of manual typing.</p>
-                    </div>
-                    <div className="p-8 bg-gray-50 rounded-[40px] border border-gray-100 shadow-sm">
-                      <h4 className="text-green-600 mb-4 uppercase tracking-tighter">Journalism & Media</h4>
-                      <p className="text-sm font-medium text-gray-600">Journalists often work with handwritten tips or old local newspaper clippings. Digitizing this content makes it easier to publish on modern digital platforms.</p>
-                    </div>
-                  </div>
-                </section>
 
-                <section>
-                  <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">The Benefits of India's Leading Free Hindi OCR Tool</h2>
-                  <p>
-                    Why should you use a dedicated <strong>Hindi OCR Tool</strong> instead of Google Lens or generic scanners? The answer lies in "Cultural and Linguistic Context." A document from a village in UP might have slightly different handwriting styles than one from MP. Our AI is trained on these regional variations. 
-                  </p>
-                  <p>
-                    Furthermore, ScanHindi.com provides a clean, focused workspace. We don't distract you with ads or unnecessary features. Our goal is singular: to provide the most accurate <strong>Hindi Image to Text</strong> conversion in the world.
-                  </p>
-                  <p>
-                    We also support "Hinglish" detection. In modern India, many documents use English terms written in Devanagari (e.g., "कंप्यूटर", "इंटरनेट"). Our engine switches context seamlessly between pure Hindi and technical Hinglish without losing accuracy.
-                  </p>
-                </section>
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-blue-100 blur-[80px] opacity-30 -z-10 rounded-full" />
+                        <div className="bg-white p-2 rounded-[40px] shadow-2xl border border-gray-100">
+                             <div className="bg-gray-50 rounded-[32px] p-8 space-y-6">
+                                 <div className="flex items-center justify-between pb-6 border-b border-gray-200/50">
+                                     <div className="flex items-center gap-3">
+                                         <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white">
+                                            <Zap className="w-5 h-5" />
+                                         </div>
+                                         <span className="text-[11px] font-black uppercase tracking-widest text-gray-900">AI Preview</span>
+                                     </div>
+                                     <span className="px-3 py-1 bg-green-100 text-green-700 text-[9px] font-black uppercase rounded-full">Success</span>
+                                 </div>
 
-                <div className="bg-gradient-to-br from-gray-900 to-black text-white p-12 rounded-[50px] space-y-8 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                  <h3 className="text-4xl font-black uppercase italic tracking-tighter leading-none">Ranked #1 for Hindi OCR in 2026</h3>
-                  <p className="text-gray-400 text-lg font-medium leading-relaxed">
-                    With over 10,000 satisfied users, ScanHindi.com is the go-to platform for individuals and businesses alike. Our commitment to accuracy and privacy makes us the trusted choice for digitizing the Devanagari script.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-6 pt-4">
-                    <button onClick={() => { setLoginMode("user"); setShowLoginPage(true); }} className="px-10 py-5 bg-white text-black font-black uppercase text-sm rounded-[24px] hover:bg-gray-200 transition-all shadow-xl shadow-white/5">Get Started Now</button>
-                    <a href="#pricing" className="px-10 py-5 border border-white/20 text-white font-black uppercase text-sm rounded-[24px] hover:bg-white/10 transition-all text-center flex items-center justify-center">View Pricing</a>
-                  </div>
+                                 <div className="space-y-4">
+                                     <div className="h-4 bg-gray-200 rounded-full w-3/4 animate-pulse" />
+                                     <div className="h-4 bg-gray-200 rounded-full w-full animate-pulse" />
+                                     <div className="h-4 bg-gray-200 rounded-full w-5/6 animate-pulse" />
+                                 </div>
+
+                                 <div className="pt-6">
+                                     <button className="w-full py-4 bg-gray-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl">
+                                         Digitalize Now
+                                     </button>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
                 </div>
-
-                <section id="seo-faq" className="mt-32">
-                   <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tight mb-16 border-l-8 border-blue-600 pl-8">Hindi Image to Text Converter - Detailed FAQ</h2>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-                     <div className="space-y-4">
-                       <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight italic">1. How accurate is the Hindi OCR?</h3>
-                       <p className="font-medium text-gray-600">We use the Google Gemini Pro Vision model, which is one of the world's most powerful AI models. For standard printed documents, our accuracy is close to 100%. For handwritten documents, it stays significantly higher than any other tool on the market because it uses linguistic context to 'guess' characters correctly if they are partially obscured.</p>
-                     </div>
-                     <div className="space-y-4">
-                       <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight italic">2. Is there a limit on image size?</h3>
-                       <p className="font-medium text-gray-600">We recommend images under 10MB for the fastest processing. High-resolution images (300 DPI or higher) are recommended for accuracy, especially if the text is very small or if the document is old and faded.</p>
-                     </div>
-                     <div className="space-y-4">
-                       <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight italic">3. Can I convert images to Microsoft Word?</h3>
-                       <p className="font-medium text-gray-600">Yes! Once the text is extracted, you can copy it with a single click and paste it directly into Microsoft Word, Google Docs, Notepad, or even a WhatsApp message. The text is standard Unicode Hindi and will work anywhere.</p>
-                     </div>
-                     <div className="space-y-4">
-                       <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight italic">4. Does it support Marathi or Sanskrit?</h3>
-                       <p className="font-medium text-gray-600">Yes. Since Marathi and Sanskrit also use the Devanagari script, our <strong>Hindi Image to Text Converter</strong> performs exceptionally well with these languages too. The AI automatically detects the language and adjusts its vocabulary accordingly.</p>
-                     </div>
-                     <div className="space-y-4">
-                       <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight italic">5. Can I use it on my mobile phone?</h3>
-                       <p className="font-medium text-gray-600">Absolutely. ScanHindi.com is a "Progressive Web App" designed to work flawlessly on Chrome, Safari, and other mobile browsers. You can even click a photo directly from your phone's camera and upload it for instant scanning.</p>
-                     </div>
-                     <div className="space-y-4">
-                       <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight italic">6. What happens to my uploaded images?</h3>
-                       <p className="font-medium text-gray-600">Your privacy is paramount. Images are processed in a secure environment and are not stored permanently. Once you refresh the page or logout, the session data is cleared.</p>
-                     </div>
-                     <div className="space-y-4">
-                       <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight italic">7. Is this Hindi OCR tool really free?</h3>
-                       <p className="font-medium text-gray-600">Yes! We provide a generous free tier for individuals. Every new user gets 3 high-speed AI scans for free. For users with large archives, we offer affordable premium plans that help keep our servers running and our AI models updated.</p>
-                     </div>
-                     <div className="space-y-4">
-                       <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight italic">8. How do I get the best accuracy?</h3>
-                       <p className="font-medium text-gray-600">To maximize accuracy, ensure your photo is well-lit and the text is not blurry. Holding the camera straight and using the "Crop" feature to remove shadows or background clutter will yield the best <strong>image to text Hindi</strong> results.</p>
-                     </div>
-                     <div className="space-y-4">
-                       <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight italic">9. Can it read columns or tables?</h3>
-                       <p className="font-medium text-gray-600">Our advanced model is trained on structural layout analysis. It can identify text in columns or tables and will attempt to preserve the logical reading order, making it perfect for scanned Hindi newspapers or reports.</p>
-                     </div>
-                     <div className="space-y-4">
-                       <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight italic">10. Do I need to be a tech expert?</h3>
-                       <p className="font-medium text-gray-600">Not at all. We designed ScanHindi.com with simplicity in mind. If you can take a photo and click a button, you can use our tool. It is as simple as 1-2-3.</p>
-                     </div>
-                   </div>
-                </section>
-
-                <section className="text-center pt-20 border-t border-gray-100">
-                  <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">Proudly Serving 1.4 Billion Indians</p>
-                  <p className="text-gray-400 text-sm font-bold uppercase tracking-widest mt-2 hover:text-blue-600 transition-colors cursor-default">Digitizing the Devanagari Script with AI</p>
-                </section>
-              </div>
-
-              {/* FAQ Schema for Google */}
-              <script type="application/ld+json">
-                {JSON.stringify({
-                  "@context": "https://schema.org",
-                  "@type": "FAQPage",
-                  "mainEntity": [
-                    {
-                      "@type": "Question",
-                      "name": "How to convert Hindi Image to Text?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "Upload your Hindi document on ScanHindi.com, click scan, and copy the digitized text instantly."
-                      }
-                    },
-                    {
-                      "@type": "Question",
-                      "name": "What is the best Hindi OCR Tool for handwriting?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "ScanHindi.com uses Gemini Pro Vision AI to specifically handle complex Hindi handwriting with over 99% accuracy."
-                      }
-                    },
-                    {
-                      "@type": "Question",
-                      "name": "Is ScanHindi.com free?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "Yes, we offer a free tier with 3 high-speed AI scans for new users to test the quality of our Hindi OCR tool."
-                      }
-                    },
-                    {
-                      "@type": "Question",
-                      "name": "Does it support Devanagari for mobile?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "ScanHindi is mobile-optimized. You can use your phone camera to scan and copy Hindi text immediately."
-                      }
-                    }
-                  ]
-                })}
-              </script>
-            </div>
+             </div>
           </section>
 
-          {/* Pricing Section */}
-          <section id="pricing" className="py-32 px-6 bg-gray-50/50 relative">
-            <div className="max-w-7xl mx-auto space-y-20">
-              <div className="text-center space-y-4">
-                <h2 className="text-sm font-black uppercase tracking-[0.4em] text-blue-600">Transparent Pricing</h2>
-                <h3 className="text-5xl font-black tracking-tighter text-gray-900 italic">No Monthly Fees. Just Packs.</h3>
-                <p className="text-gray-500 font-bold italic">Standard Rate: ₹5 per image scan</p>
-              </div>
+          {/* Use Cases Section */}
+          <section className="py-24 px-6 bg-gray-900 overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-1/2 h-full bg-blue-600/10 blur-[120px]" />
+              <div className="max-w-7xl mx-auto space-y-20 relative z-10">
+                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                      <div className="space-y-4">
+                          <h2 className="text-blue-500 text-[10px] font-black uppercase tracking-[0.4em]">Use Cases</h2>
+                          <h3 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter">Digitizing India's <br /> Legacy & Paperwork.</h3>
+                      </div>
+                      <p className="text-gray-400 max-w-md font-medium text-sm leading-relaxed">
+                          From rural administration to personal archives, ScanHindi.com is the bridge between paper and digital worlds.
+                      </p>
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {[
-                  { name: "Basic Pack", price: "50", scans: "10", tag: "GET STARTED", color: "gray" },
-                  { name: "Popular Pack", price: "100", scans: "30", tag: "MOST POPULAR", color: "blue", highlight: true },
-                  { name: "Pro Pack", price: "200", scans: "80", tag: "BEST VALUE", color: "orange" }
-                ].map((tier, i) => (
-                  <motion.div 
-                    key={i}
-                    whileHover={{ y: -10 }}
-                    className={`p-12 rounded-[40px] border ${tier.highlight ? "border-blue-500 bg-white shadow-2xl shadow-blue-600/10" : "border-gray-100 bg-white"} relative overflow-hidden`}
-                  >
-                    {tier.highlight && (
-                      <div className="absolute top-0 right-0 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest px-6 py-2 rounded-bl-2xl">
-                        {tier.tag}
-                      </div>
-                    )}
-                    {!tier.highlight && (
-                      <div className="mb-6 text-[10px] font-black uppercase tracking-widest text-gray-400">
-                        {tier.tag}
-                      </div>
-                    )}
-                    <h4 className="text-3xl font-black text-gray-900 italic mb-2">{tier.name}</h4>
-                    <div className="flex items-end gap-2 mb-8">
-                      <span className="text-6xl font-black tracking-tighter text-gray-900 italic">₹{tier.price}</span>
-                      <span className="text-gray-400 font-bold mb-2 uppercase text-xs">one-time</span>
-                    </div>
-                    <div className="space-y-4 mb-10">
-                      <div className="flex items-center gap-3">
-                        <Zap className="w-5 h-5 text-blue-500" />
-                        <span className="text-gray-900 font-black">{tier.scans} Total Image Scans</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-green-500" />
-                        <span className="text-gray-500 font-medium">Auto-Sync with Dashboard</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-green-500" />
-                        <span className="text-gray-500 font-medium">Priority Processing</span>
-                      </div>
-                    </div>
-                    <button 
-                      onClick={() => window.open(`https://wa.me/916205710721?text=Hi, I want to purchase the ${tier.name} (₹${tier.price} for ${tier.scans} scans). Please guide me with the payment.`, "_blank")}
-                      className={`w-full py-5 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all ${tier.highlight ? "bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-blue-600/20" : "bg-gray-100 text-gray-900 hover:bg-gray-200"}`}
-                    >
-                      Buy Now
-                    </button>
-                  </motion.div>
-                ))}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      {[
+                        { title: "Govt Forms", desc: "Scan birth, death, and land registration forms with high precision.", img: "📝" },
+                        { title: "Old Letters", desc: "Preserve historical Hindi letters into digital readable archives.", img: "✉️" },
+                        { title: "Students", desc: "Convert handwritten class notes into searchable study material.", img: "🎓" },
+                        { title: "Legal Files", desc: "Digitize Hindi court affidavits and legal documentation instantly.", img: "⚖️" }
+                      ].map((item, idx) => (
+                        <div key={idx} className="bg-white/5 border border-white/5 p-8 rounded-[32px] hover:bg-white/10 transition-colors group">
+                            <div className="text-4xl mb-6 group-hover:scale-110 transition-transform">{item.img}</div>
+                            <h4 className="text-white font-black italic text-xl mb-3 tracking-tight">{item.title}</h4>
+                            <p className="text-gray-400 text-sm font-medium leading-relaxed">{item.desc}</p>
+                        </div>
+                      ))}
+                  </div>
               </div>
+          </section>
+
+          {/* FAQ/SEO Section */}
+          <section id="seo-faq" className="py-24 px-6 bg-white">
+            <div className="max-w-4xl mx-auto space-y-20">
+                <div className="space-y-6 text-center">
+                    <h2 className="text-sm font-black text-blue-600 uppercase tracking-widest">Frequently Asked Questions</h2>
+                    <h3 className="text-4xl md:text-5xl font-black text-gray-900 italic tracking-tighter">Everything You Need To Know</h3>
+                </div>
+
+                <div className="space-y-4">
+                    {[
+                        { q: "Is Hindi OCR Pro free to use?", a: "Yes, we offer a free trial with free credits for every new user. For professional or bulk usage, you can purchase premium credit packs." },
+                        { q: "How accurate is the Hindi text extraction?", a: "We achieve up to 99.9% accuracy for clear printed text and high precision for legible handwriting, thanks to the latest Gemini AI engine." },
+                        { q: "Can it recognize different Hindi dialects?", a: "Yes, our AI model is trained on standard Hindi as well as various regional Devanagari handwriting styles across India." },
+                        { q: "Is my data secure on ScanHindi.com?", a: "Absolutely. We do not store your images longer than necessary for processing, and all connections are secured with SSL encryption." },
+                        { q: "How can I get more credits?", a: "You can easily top up your credits by contacting our support team via WhatsApp button on the dashboard." }
+                    ].map((item, idx) => (
+                        <details key={idx} className="group border-b border-gray-100 last:border-0">
+                            <summary className="flex items-center justify-between p-8 cursor-pointer list-none hover:bg-gray-50/50 transition-colors">
+                                <span className="text-lg font-black text-gray-900 italic tracking-tight">{item.q}</span>
+                                <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
+                            </summary>
+                            <div className="px-8 pb-8 text-gray-500 font-medium leading-relaxed text-sm">
+                                {item.a}
+                            </div>
+                        </details>
+                    ))}
+                </div>
+
+                <div className="p-12 rounded-[40px] bg-blue-50 border border-blue-100 space-y-6">
+                    <h4 className="text-xl font-black text-blue-900 italic">About ScanHindi.com</h4>
+                    <p className="text-blue-900/70 leading-relaxed font-medium text-sm">
+                        ScanHindi.com is India's leading AI-powered OCR platform dedicated specifically to the Hindi language. Our mission is to bridge the digital divide in rural and urban India by providing accessible tools to digitize hand-recorded information. Our platform uses state-of-the-art neural networks to understand the nuances of Hindi handwriting, making it an essential tool for administrators, legal professionals, and students alike.
+                    </p>
+                </div>
             </div>
           </section>
 
@@ -1662,7 +1397,7 @@ useEffect(() => {
           </section>
 
           {/* Footer */}
-          <footer className="py-32 px-6 border-t border-gray-100 bg-white">
+          <footer className="py-20 px-6 border-t border-gray-100 bg-white">
             <div className="max-w-7xl mx-auto space-y-24">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-8">
                 <div className="md:col-span-1 space-y-8">
@@ -1836,6 +1571,12 @@ useEffect(() => {
                   className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "ocr" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
                 >
                   OCR Tool
+                </button>
+                <button 
+                  onClick={() => setActiveTab("janam")}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "janam" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
+                >
+                  Janam Form
                 </button>
                 <button 
                   onClick={() => setActiveTab("history")}
@@ -2316,13 +2057,13 @@ useEffect(() => {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="max-w-4xl mx-auto text-center space-y-8"
+                    className="max-w-4xl mx-auto text-center py-20"
                   >
-                    <div className="relative inline-block mt-4 mb-8">
-                      <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-orange-600 tracking-tighter leading-[0.95] absolute inset-0 blur-xl opacity-70 animate-pulse">
+                    <div className="relative inline-block mt-4 mb-4">
+                      <h2 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-orange-600 tracking-tighter leading-[0.95] absolute inset-0 blur-xl opacity-70 animate-pulse">
                         Welcome Boss
                       </h2>
-                      <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-orange-600 tracking-tighter leading-[0.95] relative">
+                      <h2 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-orange-600 tracking-tighter leading-[0.95] relative">
                         Welcome Boss
                       </h2>
                     </div>
@@ -2377,29 +2118,6 @@ useEffect(() => {
                       <span className="text-sm font-black uppercase tracking-widest text-gray-900">Govt Standards</span>
                     </motion.div>
                   </motion.div>
-
-                  {/* Feature Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-10 pt-16">
-                    {[
-                      { title: "शुद्ध हिंदी", desc: "व्याकरण और वर्तनी की 100% शुद्धता", icon: <CheckCircle2 className="text-green-500" />, color: "bg-green-50" },
-                      { title: "फास्ट प्रोसेस", desc: "सेकंडों में इमेज से टेक्स्ट", icon: <RefreshCw className="text-blue-500" />, color: "bg-blue-50" },
-                      { title: "सुरक्षित", desc: "आपका डेटा पूरी तरह सुरक्षित है", icon: <AlertCircle className="text-orange-500" />, color: "bg-orange-50" }
-                    ].map((f, i) => (
-                      <motion.div 
-                        key={i}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 + i * 0.1 }}
-                        className="bg-white/60 backdrop-blur-md p-10 rounded-[48px] border border-white shadow-xl shadow-gray-200/20 hover:shadow-2xl hover:bg-white transition-all group"
-                      >
-                        <div className={`w-16 h-16 ${f.color} rounded-3xl flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 transition-transform`}>
-                          {f.icon}
-                        </div>
-                        <h4 className="text-xl font-black text-gray-900 mb-3 tracking-tight">{f.title}</h4>
-                        <p className="text-gray-500 font-medium leading-relaxed">{f.desc}</p>
-                      </motion.div>
-                    ))}
-                  </div>
                 </>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">

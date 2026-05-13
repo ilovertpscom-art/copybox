@@ -5,10 +5,73 @@
 @theme {
   --font-sans: "Inter", "Noto Sans Devanagari", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Noto Serif Devanagari", "Georgia", serif;
+  
+  /* Fallback colors for html2canvas/html2pdf which don't support oklch */
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  
+  --color-blue-50: #eff6ff;
+  --color-blue-600: #2563eb;
+
+  --color-purple-50: #faf5ff;
+  --color-purple-600: #9333ea;
+
+  --color-orange-50: #fff7ed;
+  --color-orange-600: #ea580c;
+
+  --color-green-50: #f0fdf4;
+  --color-green-600: #16a34a;
+
+  --color-red-600: #dc2626;
 }
 
 @layer base {
   html {
     scroll-behavior: smooth;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  body { 
+    background: white !important; 
+    margin: 0 !important; 
+    padding: 0 !important;
+    visibility: hidden;
+  }
+
+  #print-area-wrapper {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    visibility: visible !important;
+  }
+  
+  #print-area {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    page-break-inside: avoid;
   }
 }
