@@ -42,6 +42,7 @@ import {
 import Markdown from "react-markdown";
 import { processHindiImage, OCRResult } from "./services/geminiService";
 import BirthRegistrationForm from "./components/BirthRegistrationForm";
+// import VanshawaliForm from "./components/VanshawaliForm";
 import { db, auth, googleProvider } from "./firebase";
 import { 
   collection, 
@@ -222,6 +223,7 @@ export default function App() {
 
   const [image, setImage] = useState<string | null>(null);
   const [mimeType, setMimeType] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<OCRResult | null>(null);
@@ -736,6 +738,7 @@ useEffect(() => {
       reader.onload = (event) => {
         setImage(event.target?.result as string);
         setMimeType(file.type);
+        setFileName(file.name);
         setResult(null);
         setError(null);
         setProgress(0);
@@ -751,11 +754,12 @@ useEffect(() => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("image/")) {
+    if (file && (file.type.startsWith("image/") || file.type === "application/pdf")) {
       const reader = new FileReader();
       reader.onload = (event) => {
         setImage(event.target?.result as string);
         setMimeType(file.type);
+        setFileName(file.name);
         setResult(null);
         setError(null);
         setProgress(0);
@@ -904,6 +908,7 @@ useEffect(() => {
   const reset = () => {
     setImage(null);
     setMimeType(null);
+    setFileName(null);
     setResult(null);
     setError(null);
     setCrop(undefined);
@@ -1704,13 +1709,20 @@ useEffect(() => {
                       animate={{ opacity: 1, scale: 1 }}
                       className="group bg-white rounded-[40px] shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden transition-all flex flex-col h-[400px]"
                     >
-                      <div className="relative h-48 bg-gray-50 flex items-center justify-center overflow-hidden">
-                        <img 
-                          src={scan.imageUrl} 
-                          alt="Scan preview" 
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                          referrerPolicy="no-referrer"
-                        />
+                      <div className="relative h-48 bg-gray-50 flex items-center justify-center overflow-hidden w-full">
+                        {scan.imageUrl?.startsWith("data:application/pdf") ? (
+                          <div className="w-full h-full bg-gradient-to-br from-red-50 to-orange-50 flex flex-col items-center justify-center gap-2 p-4 text-center border-b border-gray-100">
+                            <FileText className="w-10 h-10 text-red-500" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-red-600">PDF Document</span>
+                          </div>
+                        ) : (
+                          <img 
+                            src={scan.imageUrl} 
+                            alt="Scan preview" 
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                            referrerPolicy="no-referrer"
+                          />
+                        )}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                           <button 
                             onClick={() => {
@@ -2082,7 +2094,7 @@ useEffect(() => {
                       type="file" 
                       ref={fileInputRef}
                       onChange={handleImageUpload}
-                      accept="image/*"
+                      accept="image/*,application/pdf"
                       className="hidden"
                     />
                     <div className="mb-10 flex justify-center">
@@ -2093,8 +2105,8 @@ useEffect(() => {
                         <Upload className="w-12 h-12 text-white" />
                       </motion.div>
                     </div>
-                    <h3 className="text-3xl font-black mb-4 text-gray-900 tracking-tight">इमेज यहाँ अपलोड करें</h3>
-                    <p className="text-gray-400 text-lg font-bold uppercase tracking-widest">Drag & Drop or Click to Browse</p>
+                    <h3 className="text-3xl font-black mb-4 text-gray-900 tracking-tight">इमेज या PDF यहाँ अपलोड करें</h3>
+                    <p className="text-gray-400 text-lg font-bold uppercase tracking-widest">Drag & Drop Image/PDF or Click to Browse</p>
                     
                     {/* Floating Badges */}
                     <motion.div 
@@ -2135,23 +2147,25 @@ useEffect(() => {
                       </div>
                       <span className="text-xs font-black text-gray-900 uppercase tracking-[0.2em]">Source Document</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {completedCrop && (
+                    {mimeType !== "application/pdf" && (
+                      <div className="flex items-center gap-2">
+                        {completedCrop && (
+                          <button 
+                            onClick={clearCrop}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-all"
+                          >
+                            Clear
+                          </button>
+                        )}
                         <button 
-                          onClick={clearCrop}
-                          className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-all"
+                          onClick={() => setIsCropping(!isCropping)}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isCropping ? "bg-blue-600 text-white" : "bg-white text-gray-600 border border-gray-100 hover:bg-gray-50"}`}
                         >
-                          Clear
+                          <CropIcon className="w-3 h-3" />
+                          {isCropping ? "Done" : (completedCrop ? "Edit Crop" : "Crop")}
                         </button>
-                      )}
-                      <button 
-                        onClick={() => setIsCropping(!isCropping)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isCropping ? "bg-blue-600 text-white" : "bg-white text-gray-600 border border-gray-100 hover:bg-gray-50"}`}
-                      >
-                        <CropIcon className="w-3 h-3" />
-                        {isCropping ? "Done" : (completedCrop ? "Edit Crop" : "Crop")}
-                      </button>
-                    </div>
+                      </div>
+                    )}
                   </div>
                   <div className="aspect-[4/5] bg-gray-50/50 flex items-center justify-center p-10">
                     {isCropping ? (
@@ -2177,6 +2191,48 @@ useEffect(() => {
                         >
                           <X className="w-5 h-5" />
                         </button>
+                      </div>
+                    ) : mimeType === "application/pdf" ? (
+                      <div className="flex flex-col items-center justify-center text-center p-8 bg-gradient-to-b from-red-50 to-white border border-red-100 rounded-3xl w-full h-full relative overflow-hidden">
+                        {/* File PDF icon badge */}
+                        <div className="w-24 h-24 bg-red-100 text-red-600 rounded-3xl flex items-center justify-center mb-6 shadow-md border border-red-200">
+                          <FileText className="w-12 h-12" />
+                        </div>
+                        <h4 className="text-xl font-black text-gray-900 tracking-tight max-w-[280px] break-all">
+                          {fileName || "document.pdf"}
+                        </h4>
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-red-500 font-bold bg-red-50 px-3 py-1 rounded-full mt-3 border border-red-100/50">
+                          PDF DOCUMENT
+                        </span>
+
+                        {/* Close/Remove PDF Button */}
+                        <motion.button 
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={reset}
+                          className="absolute top-4 right-4 z-20 w-12 h-12 bg-white/90 backdrop-blur-md rounded-2xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-white transition-all shadow-2xl border border-white/50 group"
+                          title="Remove PDF"
+                        >
+                          <X className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
+                        </motion.button>
+                        
+                        {/* Scanning Animation */}
+                        {isProcessing && (
+                          <motion.div 
+                            initial={{ top: "0%" }}
+                            animate={{ top: "100%" }}
+                            transition={{ 
+                              duration: 2, 
+                              repeat: Infinity, 
+                              ease: "linear" 
+                            }}
+                            className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent z-10 shadow-[0_0_15px_rgba(59,130,246,0.8)]"
+                          >
+                            <div className="absolute top-0 left-0 right-0 h-[100px] bg-gradient-to-b from-blue-500/10 to-transparent -translate-y-full" />
+                          </motion.div>
+                        )}
                       </div>
                     ) : (
                       <div className="relative w-full h-full flex items-center justify-center group overflow-hidden">
